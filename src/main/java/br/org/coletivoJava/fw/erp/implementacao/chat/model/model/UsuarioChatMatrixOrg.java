@@ -22,9 +22,9 @@ public class UsuarioChatMatrixOrg extends ItemNormal implements ItfUsuarioChat {
     private String telefone;
 
     private String codigoUsuario;
-    @InfoCampo(tipo = FabTipoAtributoObjeto.AAA_NOME)
+    @InfoCampo(tipo = FabTipoAtributoObjeto.NOME)
     private String apelido;
-    @InfoCampo(tipo = FabTipoAtributoObjeto.AAA_NOME_LONGO)
+    @InfoCampo(tipo = FabTipoAtributoObjeto.NOME_LONGO)
     private String nome;
     @InfoCampo(tipo = FabTipoAtributoObjeto.EMAIL)
     private String email;
