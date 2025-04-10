@@ -17,7 +17,7 @@ import java.util.List;
 public class UsuarioChatMatrixOrg extends ItemNormal implements ItfUsuarioChat {
 
     @InfoCampo(tipo = FabTipoAtributoObjeto.ID)
-    private int id;
+    private Long id;
     @InfoCampo(tipo = FabTipoAtributoObjeto.TELEFONE_CELULAR)
     private String telefone;
 
@@ -50,7 +50,7 @@ public class UsuarioChatMatrixOrg extends ItemNormal implements ItfUsuarioChat {
     }
 
     @Override
-    public int getId() {
+    public Long getId() {
         if (getCodigoUsuario() == null) {
             id = -1;
         } else {
