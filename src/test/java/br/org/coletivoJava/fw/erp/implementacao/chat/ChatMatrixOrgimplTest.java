@@ -58,7 +58,7 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
             testarCriarSala();
 
             ItfChatSalaBean salaChat = erpChatService.getSalaByCodigo("!dehxkVYYxJDsNAORfM:casanovadigital.com.br");
-            assertEquals("O id não é o id esperado", salaChat.getId(), "!dehxkVYYxJDsNAORfM:casanovadigital.com.br".hashCode());
+            assertEquals("O id não é o id esperado", salaChat.getId(), Long.valueOf("!dehxkVYYxJDsNAORfM:casanovadigital.com.br".hashCode()));
             System.out.println(salaChat.getNome());
             System.out.println(salaChat.getUsuarios());
 

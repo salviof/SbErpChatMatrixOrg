@@ -8,72 +8,72 @@ import java.lang.String;
 
 @JsonDeserialize(using = JsonBindDTONotificacaoUsuarioChat.class)
 public interface ItfDTONotificacaoUsuarioChat
-		extends
-			ItfDTOSBJSON,
-			ItfNotificacaoUsuarioChat {
+        extends
+        ItfDTOSBJSON,
+        ItfNotificacaoUsuarioChat {
 
-	@Override
-	public default String getCodigoSalaOrigem() {
-		return (String) getValorPorReflexao();
-	}
+    @Override
+    public default String getCodigoSalaOrigem() {
+        return (String) getValorPorReflexao();
+    }
 
-	@Override
-	public default String getCodigoNotificacao() {
-		return (String) getValorPorReflexao();
-	}
+    @Override
+    public default String getCodigoNotificacao() {
+        return (String) getValorPorReflexao();
+    }
 
-	@Override
-	public default String getEventoJson() {
-		return (String) getValorPorReflexao();
-	}
+    @Override
+    public default String getEventoJson() {
+        return (String) getValorPorReflexao();
+    }
 
-	@Override
-	public default String getRemetente() {
-		return (String) getValorPorReflexao();
-	}
+    @Override
+    public default String getRemetente() {
+        return (String) getValorPorReflexao();
+    }
 
-	@Override
-	public default String getConteudo() {
-		return (String) getValorPorReflexao();
-	}
+    @Override
+    public default String getConteudo() {
+        return (String) getValorPorReflexao();
+    }
 
-	@Override
-	public default String getTipoEvento() {
-		return (String) getValorPorReflexao();
-	}
+    @Override
+    public default String getTipoEvento() {
+        return (String) getValorPorReflexao();
+    }
 
-	@Override
-	public default String getNomeUnicoSlug() {
-		return (String) getValorPorReflexao();
-	}
+    @Override
+    public default String getNomeUnicoSlug() {
+        return (String) getValorPorReflexao();
+    }
 
-	@Override
-	public default boolean isTemImagemPequenaAdicionada() {
-		return (boolean) getValorPorReflexao();
-	}
+    @Override
+    public default boolean isTemImagemPequenaAdicionada() {
+        return (boolean) getValorPorReflexao();
+    }
 
-	@Override
-	public default String getSlugIdentificador() {
-		return (String) getValorPorReflexao();
-	}
+    @Override
+    public default String getSlugIdentificador() {
+        return (String) getValorPorReflexao();
+    }
 
-	@Override
-	public default String getNome() {
-		return (String) getValorPorReflexao();
-	}
+    @Override
+    public default String getNome() {
+        return (String) getValorPorReflexao();
+    }
 
-	@Override
-	public default String getIconeDaClasse() {
-		return (String) getValorPorReflexao();
-	}
+    @Override
+    public default String getIconeDaClasse() {
+        return (String) getValorPorReflexao();
+    }
 
-	@Override
-	public default String getNomeCurto() {
-		return (String) getValorPorReflexao();
-	}
+    @Override
+    public default String getNomeCurto() {
+        return (String) getValorPorReflexao();
+    }
 
-	@Override
-	public default int getId() {
-		return (int) getValorPorReflexao();
-	}
+    @Override
+    public default Long getId() {
+        return (long) getValorPorReflexao();
+    }
 }

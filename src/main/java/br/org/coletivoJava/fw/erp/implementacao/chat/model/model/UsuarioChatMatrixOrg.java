@@ -52,9 +52,9 @@ public class UsuarioChatMatrixOrg extends ItemNormal implements ItfUsuarioChat {
     @Override
     public Long getId() {
         if (getCodigoUsuario() == null) {
-            id = -1;
+            id = -1l;
         } else {
-            id = getCodigoUsuario().hashCode();
+            id = (long) getCodigoUsuario().hashCode();
         }
 
         return id;
