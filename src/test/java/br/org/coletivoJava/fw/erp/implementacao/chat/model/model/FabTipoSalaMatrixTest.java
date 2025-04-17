@@ -19,7 +19,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import testesFW.ConfigCoreJunitPadraoDesenvolvedor;
+import testesFW.ConfigCoreJunitPadraoDevAcaoPermissao;
 
 /**
  *
@@ -49,7 +49,7 @@ public class FabTipoSalaMatrixTest {
 
     @Test
     public void testGetApelidoNomeUnicoSpace() {
-        SBCore.configurar(new ConfigCoreJunitPadraoDesenvolvedor(), SBCore.ESTADO_APP.DESENVOLVIMENTO);
+        SBCore.configurar(new ConfigCoreJunitPadraoDevAcaoPermissao(), SBCore.ESTADO_APP.DESENVOLVIMENTO);
         try {
             ItfUsuarioChat salvio = erpChatService.getUsuarioByEmail("salvio@casanovadigital.com.br");
             ItfUsuarioChat camila = erpChatService.getUsuarioByEmail("camila@casanovadigital.com.br");

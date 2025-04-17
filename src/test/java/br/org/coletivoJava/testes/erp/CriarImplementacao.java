@@ -15,7 +15,7 @@ import testes.geradorCodigo.erp.GeradorERPImplementacaoContexto;
 import testes.geradorCodigo.erp.dto.GeradorDTOInterface;
 import testes.geradorCodigo.erp.dto.GeradorDTOPojo;
 import testes.geradorCodigo.erp.dto.GeradorDTOProcessador;
-import testesFW.ConfigCoreJunitPadraoDesenvolvedor;
+import testesFW.ConfigCoreJunitPadraoDevAcaoPermissao;
 
 /**
  *
@@ -27,7 +27,7 @@ public class CriarImplementacao {
     public void criarImplementaca() {
 
         try {
-            SBCore.configurar(new ConfigCoreJunitPadraoDesenvolvedor(), SBCore.ESTADO_APP.DESENVOLVIMENTO);
+            SBCore.configurar(new ConfigCoreJunitPadraoDevAcaoPermissao(), SBCore.ESTADO_APP.DESENVOLVIMENTO);
             new GeradorERPImplementacaoContexto(ERPChat.MATRIX_ORG).salvarEmDiretorioPadraCASO_NAO_EXISTA();
 
             for (Class entidade : ERPChat.MATRIX_ORG.getInterfacesDeEntidade()) {

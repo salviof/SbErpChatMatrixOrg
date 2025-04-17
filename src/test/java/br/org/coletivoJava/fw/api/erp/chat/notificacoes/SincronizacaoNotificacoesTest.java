@@ -18,7 +18,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import testesFW.ConfigCoreJunitPadraoDesenvolvedor;
+import testesFW.ConfigCoreJunitPadraoDevAcaoPermissao;
 
 /**
  *
@@ -41,7 +41,7 @@ public class SincronizacaoNotificacoesTest {
     @Test
     public void testAddRoomEventListener() {
         try {
-            SBCore.configurar(new ConfigCoreJunitPadraoDesenvolvedor(), SBCore.ESTADO_APP.DESENVOLVIMENTO);
+            SBCore.configurar(new ConfigCoreJunitPadraoDevAcaoPermissao(), SBCore.ESTADO_APP.DESENVOLVIMENTO);
             erpChatService.registrarClasseEscutaNotificacoes(ListenerNotificacaoTestes.class);
         } catch (ErroConexaoServicoChat ex) {
             SBCore.RelatarErro(FabErro.SOLICITAR_REPARO, "Falha registrando listener", ex);

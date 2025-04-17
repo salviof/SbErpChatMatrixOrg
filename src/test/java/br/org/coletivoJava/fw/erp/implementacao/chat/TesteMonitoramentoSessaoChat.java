@@ -13,7 +13,7 @@ import br.org.coletivoJava.integracoes.matrixChat.config.FabConfigApiMatrixChat;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import testesFW.ConfigCoreJunitPadraoDesenvolvedor;
+import testesFW.ConfigCoreJunitPadraoDevAcaoPermissao;
 
 import com.super_bits.modulosSB.SBCore.ConfigGeral.arquivosConfiguracao.ConfigModulo;
 import org.coletivojava.fw.api.tratamentoErros.ErroPreparandoObjeto;
@@ -55,7 +55,7 @@ public class TesteMonitoramentoSessaoChat {
     @Test
     public void testeMonitoramentoChat() throws ErroConexaoServicoChat {
 
-        SBCore.configurar(new ConfigCoreJunitPadraoDesenvolvedor(), SBCore.ESTADO_APP.DESENVOLVIMENTO);
+        SBCore.configurar(new ConfigCoreJunitPadraoDevAcaoPermissao(), SBCore.ESTADO_APP.DESENVOLVIMENTO);
         configuracao = SBCore.getConfigModulo(FabConfigApiMatrixChat.class);
         try {
             System.out.println("Ativando monitor de sala do domínio:");

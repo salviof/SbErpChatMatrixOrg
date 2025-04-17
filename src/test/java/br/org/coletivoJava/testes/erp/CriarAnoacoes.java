@@ -12,9 +12,8 @@ import org.apache.logging.log4j.LogManager;
 import org.coletivojava.fw.api.objetoNativo.log.LogPadraoSB;
 import org.junit.Test;
 import testes.geradorCodigo.erp.GeradorAPIERP;
-import testesFW.ConfigCoreJunitPadraoDesenvolvedor;
+import testesFW.ConfigCoreJunitPadraoDevAcaoPermissao;
 //import testesFW.geradorDeCodigo.erp.GeradorAPIERP;
-
 /**
  *
  * @author desenvolvedor
@@ -25,7 +24,7 @@ public class CriarAnoacoes {
     public void criarAnotacoes() {
 
         try {
-            SBCore.configurar(new ConfigCoreJunitPadraoDesenvolvedor(), SBCore.ESTADO_APP.DESENVOLVIMENTO);
+            SBCore.configurar(new ConfigCoreJunitPadraoDevAcaoPermissao(), SBCore.ESTADO_APP.DESENVOLVIMENTO);
 
             GeradorAPIERP gerador = new GeradorAPIERP(ERPChat.MATRIX_ORG);
             gerador.salvarEmDiretorioPadraoSubstituindoAnterior();
