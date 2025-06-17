@@ -112,17 +112,29 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
     }
 
     @Override
-    public SalaMatrxOrg getSalaMatrix(ItfBeanSimplesSomenteLeitura pBeanVinculado, ItfUsuarioChat pUsuarioDono, List<ItfUsuarioChat> pUsuariosIntranet, List<ItfUsuarioChat> pUsuariosInternet) throws ErroPreparandoObjeto {
+    public SalaMatrxOrg getSalaMatrix(ItfBeanSimplesSomenteLeitura pBeanVinculado, ItfUsuarioChat pUsuarioDono, List<ItfUsuarioChat> pUsuarioContatos, List<ItfUsuarioChat> pUsuariosAtendimento) throws ErroPreparandoObjeto {
 
         SalaMatrxOrg novaSala = new SalaMatrxOrg();
-        if (pUsuariosInternet.get(0).getTelefone() == null || pUsuariosInternet.get(0).getTelefone().isEmpty()) {
+        try {
+            if (pUsuarioContatos.isEmpty()) {
+                throw new UnsupportedOperationException("Pelomenos um usuário de contato é obrigatorio");
+            }
+
+            if (pUsuariosAtendimento.isEmpty()) {
+                throw new UnsupportedOperationException("Pelomenos um usuário de contato é obrigatorio");
+            }
+        } catch (Throwable t) {
+            throw new ErroPreparandoObjeto(pBeanVinculado, t);
+        }
+
+        if (pUsuariosAtendimento.get(0).getTelefone() == null || pUsuariosAtendimento.get(0).getTelefone().isEmpty()) {
             throw new ErroPreparandoObjeto(pBeanVinculado, "O telefone do usuário externo não pode ser nulo");
         }
-        if (pUsuariosIntranet.get(0).getEmail() == null || pUsuariosIntranet.get(0).getEmail().isEmpty()) {
+        if (pUsuarioContatos.get(0).getEmail() == null || pUsuarioContatos.get(0).getEmail().isEmpty()) {
             throw new ErroPreparandoObjeto(pBeanVinculado, "O email do usuário interno não pode ser nulo");
         }
-        novaSala.setUsuariosDaEmpresa(pUsuariosIntranet);
-        novaSala.setUsuariosExternos(pUsuariosInternet);
+        novaSala.setUsuariosDaEmpresa(pUsuarioContatos);
+        novaSala.setUsuariosExternos(pUsuariosAtendimento);
         novaSala.setUsuarios(new ArrayList<>());
         String slug = getSlug();
 
@@ -134,7 +146,7 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
             case WTZAP_ATENDIMENTO:
                 break;
             case WTZAP_VENDAS:
-                ItfUsuarioChat usuarioContatoExterno = pUsuariosInternet.get(0);
+                ItfUsuarioChat usuarioContatoExterno = pUsuariosAtendimento.get(0);
                 if (UtilSBCoreStringValidador.isNuloOuEmbranco(usuarioContatoExterno.getTelefone())) {
                     throw new ErroPreparandoObjeto(novaSala, "O telefone do destinatario é obrigatório");
                 }
@@ -148,23 +160,23 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
 
                 novaSala.setApelido(UtilMatrixERP.gerarAliasSalaIDCanonicoUsuarioWhatsapp(usuarioContatoExterno, slug));
                 novaSala.setNome(nomeSala.toString());
-                ItfUsuarioChat usuarioNovoLeadwtzpVendas = pUsuariosInternet.get(0);
-                ItfUsuarioChat usuarioNovoLeadwtzpLead = pUsuariosIntranet.get(0);
+                ItfUsuarioChat usuarioNovoLeadwtzpVendas = pUsuariosAtendimento.get(0);
+                ItfUsuarioChat usuarioNovoLeadwtzpLead = pUsuarioContatos.get(0);
                 novaSala.getUsuarios().add(usuarioNovoLeadwtzpVendas);
                 novaSala.getUsuarios().add(usuarioNovoLeadwtzpLead);
                 break;
 
             case MATRIX_CHAT_VENDAS:
-                if (pUsuariosInternet == null || pUsuariosInternet.isEmpty() || pUsuariosInternet.size() > 1) {
+                if (pUsuariosAtendimento == null || pUsuariosAtendimento.isEmpty() || pUsuariosAtendimento.size() > 1) {
                     throw new UnsupportedOperationException("o usuário externo é obrigatório pois é utilizado na formação do nome");
                 }
-                ItfUsuarioChat usuarioNovoLead = pUsuariosInternet.get(0);
+                ItfUsuarioChat usuarioNovoLead = pUsuariosAtendimento.get(0);
                 novaSala.setApelido(slug + UtilSBCoreStringSlugs.gerarSlugSimples(usuarioNovoLead.getEmail()));
                 novaSala.setNome(getSlug() + usuarioNovoLead.getEmail());
                 System.out.println("Nome da SALA primeiro contato:");
                 System.out.println(novaSala.getNome());
                 if (!novaSala.getUsuarios().contains(usuarioNovoLead)) {
-                    novaSala.getUsuarios().add((ItfUsuarioChat) pUsuariosInternet.get(0));
+                    novaSala.getUsuarios().add((ItfUsuarioChat) pUsuariosAtendimento.get(0));
                     novaSala.getUsuarios().add((ItfUsuarioChat) pUsuarioDono);
                 }
                 return novaSala;
@@ -175,12 +187,12 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
 
                 novaSala.setApelido(apelido);
                 novaSala.setNome(pBeanVinculado.getNome());
-                for (ItfUsuarioChat usr : pUsuariosIntranet) {
+                for (ItfUsuarioChat usr : pUsuarioContatos) {
                     if (!novaSala.getUsuarios().contains(usr)) {
                         novaSala.getUsuarios().add(usr);
                     }
                 }
-                for (ItfUsuarioChat usr : pUsuariosIntranet) {
+                for (ItfUsuarioChat usr : pUsuarioContatos) {
                     if (!novaSala.getUsuarios().contains(usr)) {
                         novaSala.getUsuarios().add(usr);
                     }
@@ -192,12 +204,12 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
                 String apelidoChat = UtilMatrixERP.gerarAliasSalaIDCanonicoObjetoRelacionado(pBeanVinculado, slug);
                 novaSala.setApelido(apelidoChat);
                 novaSala.setNome(pBeanVinculado.getNome());
-                for (ItfUsuarioChat usr : pUsuariosIntranet) {
+                for (ItfUsuarioChat usr : pUsuarioContatos) {
                     if (!novaSala.getUsuarios().contains(usr)) {
                         novaSala.getUsuarios().add(usr);
                     }
                 }
-                for (ItfUsuarioChat usr : pUsuariosIntranet) {
+                for (ItfUsuarioChat usr : pUsuarioContatos) {
                     if (!novaSala.getUsuarios().contains(usr)) {
                         novaSala.getUsuarios().add(usr);
                     }
