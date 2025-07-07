@@ -234,6 +234,17 @@ public class ChatMatrixOrgimpl
         }
     }
 
+    @Override
+    public boolean salaLerUltimoEvento(String pCodigoSala, ItfUsuarioChat pUsuarioLeitura) throws ErroConexaoServicoChat {
+        ItfRespostaWebServiceSimples respUltimoEvento = FabApiRestIntMatrixChatSalas.SALA_OBTER_ULTIMO_EVENTO
+                .getAcao(pCodigoSala).getResposta();
+        String ultimoEvento
+                = UtilSBCoreJson.getValorApartirDoCaminho("chunk[0].event_id", respUltimoEvento.getRespostaComoObjetoJson());
+        ItfRespostaWebServiceSimples resp = FabApiRestIntMatrixChatSalas.SALA_MARCAR_COMO_LIDO.getAcao(pUsuarioLeitura, pCodigoSala, ultimoEvento).getResposta();
+
+        return resp.isSucesso();
+    }
+
     enum TIPO_INDENTIFICACAO_SALA {
         NOME,
         APELIDO,
