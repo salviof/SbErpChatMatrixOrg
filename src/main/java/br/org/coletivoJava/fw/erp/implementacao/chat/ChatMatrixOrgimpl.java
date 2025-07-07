@@ -464,7 +464,9 @@ public class ChatMatrixOrgimpl
             if (!gestaoToken.validarToken()) {
                 gestaoToken.renovarToken();
             }
-            return null;
+            if (gestaoToken.isTemTokemAtivo()) {
+                return null;
+            }
         }
         String userId = resposta.getRespostaComoObjetoJson().getString("user_id");
         ItfRespostaWebServiceSimples respostaUser = FabApiRestIntMatrixChatUsuarios.USUARIO_OBTER_DADOS.getAcao(userId).getResposta();
