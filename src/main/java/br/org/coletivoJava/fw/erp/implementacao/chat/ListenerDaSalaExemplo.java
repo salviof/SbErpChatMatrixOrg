@@ -5,28 +5,58 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat;
 
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
-import de.jojii.matrixclientserver.Bot.Events.RoomEvent;
-import de.jojii.matrixclientserver.Callbacks.RoomEventsCallback;
-import java.io.IOException;
-import java.util.List;
+import br.org.coletivoJava.fw.api.erp.chat.model.ItfEventoMatix;
+import br.org.coletivoJava.fw.erp.implementacao.chat.sessaoMatrix.listeners.EscutaSalaMatrixAbst;
 
 /**
  *
  * @author salvio
  */
-public class ListenerDaSalaExemplo implements RoomEventsCallback {
-
-    private final ItfChatSalaBean sala;
+public class ListenerDaSalaExemplo extends EscutaSalaMatrixAbst {
 
     public ListenerDaSalaExemplo(ItfChatSalaBean pSala) {
-        sala = pSala;
+        super(pSala);
+
     }
 
     @Override
-    public void onEventReceived(List<RoomEvent> list) throws IOException {
-        for (RoomEvent evento : list) {
+    public ItfChatSalaBean atualizarDtoSala() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 
-        }
+    @Override
+    public void eventoDigitando(ItfEventoMatix pEvento) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void eventoMensagem(ItfEventoMatix pEvento) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void eventoLeitura(ItfEventoMatix pEvento) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void eventoReacao(ItfEventoMatix pEvento) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void inicioProcessamento(ItfEventoMatix pEvento) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public void finalProcessamento(ItfEventoMatix pEvento) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public boolean isSalaComAutoMonitoramento(String pNomeSAla) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
 }

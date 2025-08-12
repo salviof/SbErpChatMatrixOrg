@@ -10,7 +10,6 @@ import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfUsuarioChat;
 import br.org.coletivoJava.fw.erp.implementacao.chat.ChatMatrixOrgimpl;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.After;
@@ -18,7 +17,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import testesFW.ConfigCoreJunitPadraoDevAcaoPermissao;
 
 /**

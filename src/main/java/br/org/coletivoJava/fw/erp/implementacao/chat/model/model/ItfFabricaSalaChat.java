@@ -26,14 +26,14 @@ public interface ItfFabricaSalaChat {
 
     public String getNomeSpaceDysplay();
 
-    public SalaMatrxOrg getSalaMatrix(ItfBeanSimplesSomenteLeitura pBeanVinculado, ItfUsuarioChat pUsuarioDono, List<ItfUsuarioChat> usuariosIntranet, List<ItfUsuarioChat> pUsuariosInternet) throws ErroPreparandoObjeto;
+    public SalaMatrxOrg getSalaMatrix(ItfBeanSimplesSomenteLeitura pBeanVinculado, ItfUsuarioChat pUsuarioDono, List<ItfUsuarioChat> pAtendentes, List<ItfUsuarioChat> pContatosWtzp) throws ErroPreparandoObjeto;
 
-    public default SalaMatrxOrg getSalaMatrix(ItfUsuarioChat pUsuarioDono, ItfUsuarioChat pUsuarioAtendimento, ItfUsuarioChat pUsuarioInternet) throws ErroPreparandoObjeto {
-        return getSalaMatrix(null, pUsuarioDono, Lists.newArrayList(pUsuarioAtendimento), Lists.newArrayList(pUsuarioInternet));
+    public default SalaMatrxOrg getSalaMatrix(ItfUsuarioChat pUsuarioDono, ItfUsuarioChat pUsuarioAtendimento, ItfUsuarioChat pContatoWtzp) throws ErroPreparandoObjeto {
+        return getSalaMatrix(null, pUsuarioDono, Lists.newArrayList(pUsuarioAtendimento), Lists.newArrayList(pContatoWtzp));
     }
 
-    public default SalaMatrxOrg getSalaMatrix(ItfUsuarioChat pUsuarioAtendimento, ItfUsuarioChat pUsuarioInternet) throws ErroPreparandoObjeto {
-        return getSalaMatrix(null, pUsuarioAtendimento, Lists.newArrayList(pUsuarioInternet), Lists.newArrayList(pUsuarioAtendimento));
+    public default SalaMatrxOrg getSalaMatrixPadrao(ItfUsuarioChat pAtendimento, ItfUsuarioChat pContatoWtzp) throws ErroPreparandoObjeto {
+        return getSalaMatrix(null, pAtendimento, Lists.newArrayList(pAtendimento), Lists.newArrayList(pContatoWtzp));
     }
 
     public String getSlug();

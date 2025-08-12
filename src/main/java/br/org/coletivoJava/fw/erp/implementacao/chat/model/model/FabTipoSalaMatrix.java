@@ -112,7 +112,11 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
     }
 
     @Override
-    public SalaMatrxOrg getSalaMatrix(ItfBeanSimplesSomenteLeitura pBeanVinculado, ItfUsuarioChat pUsuarioDono, List<ItfUsuarioChat> pUsuarioContatos, List<ItfUsuarioChat> pUsuariosAtendimento) throws ErroPreparandoObjeto {
+    public SalaMatrxOrg getSalaMatrix(ItfBeanSimplesSomenteLeitura pBeanVinculado,
+            ItfUsuarioChat pUsuarioDono,
+            List<ItfUsuarioChat> pUsuariosAtendimento,
+            List<ItfUsuarioChat> pUsuarioContatos
+    ) throws ErroPreparandoObjeto {
 
         SalaMatrxOrg novaSala = new SalaMatrxOrg();
         try {
@@ -127,10 +131,10 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
             throw new ErroPreparandoObjeto(pBeanVinculado, t);
         }
 
-        if (pUsuariosAtendimento.get(0).getTelefone() == null || pUsuariosAtendimento.get(0).getTelefone().isEmpty()) {
+        if (pUsuarioContatos.get(0).getTelefone() == null || pUsuarioContatos.get(0).getTelefone().isEmpty()) {
             throw new ErroPreparandoObjeto(pBeanVinculado, "O telefone do usuário externo não pode ser nulo");
         }
-        if (pUsuarioContatos.get(0).getEmail() == null || pUsuarioContatos.get(0).getEmail().isEmpty()) {
+        if (pUsuariosAtendimento.get(0).getEmail() == null || pUsuariosAtendimento.get(0).getEmail().isEmpty()) {
             throw new ErroPreparandoObjeto(pBeanVinculado, "O email do usuário interno não pode ser nulo");
         }
         novaSala.setUsuariosDaEmpresa(pUsuarioContatos);
@@ -141,29 +145,55 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
         if (novaSala.getUsuarios() == null) {
             novaSala.setUsuarios(new ArrayList());
         }
+        ItfUsuarioChat usuarioAtendimentoPrincipal = null;
+        if (pUsuariosAtendimento != null && !pUsuariosAtendimento.isEmpty()) {
+            usuarioAtendimentoPrincipal = pUsuariosAtendimento.get(0);
+        }
 
+        ItfUsuarioChat usuarioContatoPrincipal = null;
+        if (pUsuarioContatos != null && !pUsuarioContatos.isEmpty()) {
+            usuarioContatoPrincipal = pUsuarioContatos.get(0);
+        }
+
+        StringBuilder nomeSala = new StringBuilder();
         switch (this) {
             case WTZAP_ATENDIMENTO:
-                break;
-            case WTZAP_VENDAS:
-                ItfUsuarioChat usuarioContatoExterno = pUsuariosAtendimento.get(0);
-                if (UtilSBCoreStringValidador.isNuloOuEmbranco(usuarioContatoExterno.getTelefone())) {
+
+                if (UtilSBCoreStringValidador.isNuloOuEmbranco(usuarioContatoPrincipal.getTelefone())) {
                     throw new ErroPreparandoObjeto(novaSala, "O telefone do destinatario é obrigatório");
                 }
-                StringBuilder nomeSala = new StringBuilder();
-                String nomeReduzido = UtilSBCoreStringsExtrator.getNomeReduzido(usuarioContatoExterno.getNome());
-                nomeReduzido = UtilSBCoreStringsCammelCase.getCamelByTextoPrimeiraLetraMaiuscula(nomeReduzido);
-                nomeSala.append(nomeReduzido);
-                nomeSala.append(usuarioContatoExterno.getTelefone());
+
+                String nomeClienteReduzido = UtilSBCoreStringsExtrator.getNomeReduzido(usuarioContatoPrincipal.getNome());
+                nomeClienteReduzido = UtilSBCoreStringsCammelCase.getCamelByTextoPrimeiraLetraMaiuscula(nomeClienteReduzido);
+                nomeSala.append(nomeClienteReduzido);
+                nomeSala.append(usuarioContatoPrincipal.getTelefone());
                 nomeSala.append("_");
                 nomeSala.append(slug);
 
-                novaSala.setApelido(UtilMatrixERP.gerarAliasSalaIDCanonicoUsuarioWhatsapp(usuarioContatoExterno, slug));
+                novaSala.setApelido(UtilMatrixERP.gerarAliasSalaIDCanonicoUsuarioWhatsapp(usuarioContatoPrincipal, slug));
                 novaSala.setNome(nomeSala.toString());
-                ItfUsuarioChat usuarioNovoLeadwtzpVendas = pUsuariosAtendimento.get(0);
-                ItfUsuarioChat usuarioNovoLeadwtzpLead = pUsuarioContatos.get(0);
-                novaSala.getUsuarios().add(usuarioNovoLeadwtzpVendas);
-                novaSala.getUsuarios().add(usuarioNovoLeadwtzpLead);
+
+                novaSala.getUsuarios().add(usuarioContatoPrincipal);
+                novaSala.getUsuarios().add(usuarioAtendimentoPrincipal);
+                break;
+            case WTZAP_VENDAS:
+
+                if (UtilSBCoreStringValidador.isNuloOuEmbranco(usuarioContatoPrincipal.getTelefone())) {
+                    throw new ErroPreparandoObjeto(novaSala, "O telefone do destinatario é obrigatório");
+                }
+
+                String nomeLeadReduzido = UtilSBCoreStringsExtrator.getNomeReduzido(usuarioContatoPrincipal.getNome());
+                nomeLeadReduzido = UtilSBCoreStringsCammelCase.getCamelByTextoPrimeiraLetraMaiuscula(nomeLeadReduzido);
+                nomeSala.append(nomeLeadReduzido);
+                nomeSala.append(usuarioContatoPrincipal.getTelefone());
+                nomeSala.append("_");
+                nomeSala.append(slug);
+
+                novaSala.setApelido(UtilMatrixERP.gerarAliasSalaIDCanonicoUsuarioWhatsapp(usuarioContatoPrincipal, slug));
+                novaSala.setNome(nomeSala.toString());
+
+                novaSala.getUsuarios().add(usuarioContatoPrincipal);
+                novaSala.getUsuarios().add(usuarioAtendimentoPrincipal);
                 break;
 
             case MATRIX_CHAT_VENDAS:
@@ -226,13 +256,13 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
     }
 
     @Override
-    public SalaMatrxOrg getSalaMatrix(ItfUsuarioChat pUsuarioDono, ItfUsuarioChat psuariosIntranet, ItfUsuarioChat pUsuariosInternet) throws ErroPreparandoObjeto {
+    public SalaMatrxOrg getSalaMatrix(ItfUsuarioChat pUsuarioDono, ItfUsuarioChat pUsuarioAtendimento, ItfUsuarioChat pUsuarioContato) throws ErroPreparandoObjeto {
         switch (this) {
 
             case WTZAP_ATENDIMENTO:
             case WTZAP_VENDAS:
             case WTZAP_ATENDIMENTO_GRUPO_CLIENTE:
-                return getSalaMatrix(null, pUsuarioDono, Lists.newArrayList(psuariosIntranet), Lists.newArrayList(pUsuariosInternet));
+                return getSalaMatrix(null, pUsuarioDono, Lists.newArrayList(pUsuarioAtendimento), Lists.newArrayList(pUsuarioContato));
 
             case MATRIX_CHAT_VENDAS:
 
@@ -249,8 +279,8 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
     }
 
     @Override
-    public SalaMatrxOrg getSalaMatrix(ItfUsuarioChat pUsuarioAtendimento, ItfUsuarioChat pUsuariosInternet) throws ErroPreparandoObjeto {
-        return getSalaMatrix(null, pUsuarioAtendimento, Lists.newArrayList(pUsuarioAtendimento), Lists.newArrayList(pUsuariosInternet));
+    public SalaMatrxOrg getSalaMatrixPadrao(ItfUsuarioChat pUsuarioAtendimento, ItfUsuarioChat pUsuariosContato) throws ErroPreparandoObjeto {
+        return getSalaMatrix(null, pUsuarioAtendimento, Lists.newArrayList(pUsuarioAtendimento), Lists.newArrayList(pUsuariosContato));
     }
 
     @Override

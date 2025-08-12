@@ -8,16 +8,11 @@ import br.org.coletivoJava.fw.api.erp.chat.ERPChat;
 import br.org.coletivoJava.fw.api.erp.chat.ErroConexaoServicoChat;
 import br.org.coletivoJava.fw.erp.implementacao.chat.ChatMatrixOrgimpl;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
-import de.jojii.matrixclientserver.Callbacks.RoomEventsCallback;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.coletivojava.fw.api.tratamentoErros.FabErro;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import testesFW.ConfigCoreJunitPadraoDevAcaoPermissao;
 
 /**

@@ -4,30 +4,37 @@
  */
 package br.org.coletivoJava.fw.erp.implementacao.chat.model.model;
 
+import br.org.coletivoJava.fw.api.erp.chat.model.ItfSalaChatSessaoEescutaAtiva;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
-import de.jojii.matrixclientserver.Bot.Events.RoomEvent;
-import de.jojii.matrixclientserver.Callbacks.RoomEventsCallback;
+import br.org.coletivoJava.fw.api.erp.chat.model.ItfListenerEventoMatrix;
 
 /**
  *
  * @author salvio
  */
-public class SalaChatSessaoEscutaAtiva {
+public class SalaChatSessaoEscutaAtiva implements ItfSalaChatSessaoEescutaAtiva {
 
     private final ItfChatSalaBean sala;
-    private final RoomEventsCallback escuta;
+    private final ItfListenerEventoMatrix escuta;
 
-    public SalaChatSessaoEscutaAtiva(final ItfChatSalaBean pSala, final RoomEventsCallback pEscuta) {
+    public SalaChatSessaoEscutaAtiva(final ItfChatSalaBean pSala, final ItfListenerEventoMatrix pEscuta) {
         sala = pSala;
         escuta = pEscuta;
     }
 
+    @Override
     public ItfChatSalaBean getSala() {
         return sala;
     }
 
-    public RoomEventsCallback getEscuta() {
+    @Override
+    public ItfListenerEventoMatrix getEscuta() {
         return escuta;
+    }
+
+    @Override
+    public String toString() {
+        return sala.getApelido();
     }
 
 }

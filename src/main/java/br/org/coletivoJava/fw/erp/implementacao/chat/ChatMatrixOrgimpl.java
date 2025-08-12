@@ -1,5 +1,6 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat;
 
+import br.org.coletivoJava.fw.erp.implementacao.chat.sessaoMatrix.SessaoMatrix;
 import br.org.coletivoJava.fw.api.erp.chat.ChatMatrixOrg;
 import br.org.coletivoJava.fw.api.erp.chat.ERPChat;
 import br.org.coletivoJava.fw.api.erp.chat.ErroConexaoServicoChat;
@@ -14,6 +15,7 @@ import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.FabTipoSalaMatr
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.RespostaSalaApiEscuta;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.SalaChatSessaoEscutaAtiva;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.UsuarioChatMatrixOrg;
+import br.org.coletivoJava.fw.api.erp.chat.model.ItfListenerEventoMatrix;
 import br.org.coletivoJava.integracoes.matrixChat.FabApiRestIntMatrixChatSalas;
 import br.org.coletivoJava.integracoes.matrixChat.FabApiRestIntMatrixChatUsuarios;
 import br.org.coletivoJava.integracoes.matrixChat.FabApiRestIntMatrixSpaces;
@@ -68,10 +70,10 @@ public class ChatMatrixOrgimpl
     private static Map<String, ItfUsuarioChat> mapaUsuarioChatByTelefone = new HashMap<>();
     private static Map<String, ItfUsuarioChat> mapaUsuarioChatByCodigo = new HashMap<>();
     private static Map<String, SalaChatSessaoEscutaAtiva> mapasalaSessaoAtiva = new HashMap<>();
-    private static Class classeEscutaSalas = ListenerDaSalaExemplo.class;
+    private static Class classeEscutaSalas;
     private static Class classeEscutaNotificacao;
     private static SincronizacaoNotificacoes sincronizadorNotificacoes;
-    private static MonitorConexao monitor;
+    private static SessaoMatrix monitor;
     private final static RespostaSalaApiEscuta respSalaApi = new RespostaSalaApiEscuta();
     private static ConfigModulo configuracao;
     private static SincronizacaoNotificacoes sinc;
@@ -164,7 +166,7 @@ public class ChatMatrixOrgimpl
 
         ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatUsuarios.USUARIO_OBTER_DADOS_BY_EMAIL.getAcao(getConfiguracao().getPropriedade(FabConfigApiMatrixChat.USUARIO_ADMIN)).getResposta();
 
-        if (!resposta.isSucesso()) {
+        if (resposta == null || !resposta.isSucesso()) {
             System.out.println("Falha localizando usuário pelo e-mail:");
 
             gestaoToken = (GestaoTokenRestIntmatrixchat) FabApiRestIntMatrixChatUsuarios.USUARIO_OBTER_DADOS.getGestaoToken();
@@ -243,6 +245,44 @@ public class ChatMatrixOrgimpl
         ItfRespostaWebServiceSimples resp = FabApiRestIntMatrixChatSalas.SALA_MARCAR_COMO_LIDO.getAcao(pUsuarioLeitura, pCodigoSala, ultimoEvento).getResposta();
 
         return resp.isSucesso();
+    }
+
+    @Override
+    public JsonArray salaLerUltimasMensagens(String pCodigoSala) throws ErroConexaoServicoChat {
+
+        ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatSalas.SALA_OBTER_ULTIMAS_10_MENSAGENS.getAcao(pCodigoSala).getResposta();
+        return resposta.getRespostaComoObjetoJson().getJsonArray("chunk");
+
+    }
+
+    public boolean isUmUsuarioAtendimento(String pCodigo) {
+        if (pCodigo == null) {
+            return false;
+        }
+        return pCodigo.contains(".at:");
+    }
+
+    public boolean isUmUsuarioContato(String pCodigo) {
+        if (pCodigo == null) {
+            return false;
+        }
+        return pCodigo.contains(".ct:");
+    }
+
+    @Override
+    public boolean isUmUsuarioAtendimento(ItfUsuarioChat pUsuarioAtendimento) {
+        if (pUsuarioAtendimento == null) {
+            return false;
+        }
+        return isUmUsuarioAtendimento(pUsuarioAtendimento.getCodigoUsuario());
+    }
+
+    @Override
+    public boolean isUmUsuarioContato(ItfUsuarioChat pUsuarioContato) {
+        if (pUsuarioContato == null) {
+            return false;
+        }
+        return isUmUsuarioContato(pUsuarioContato.getCodigoUsuario());
     }
 
     enum TIPO_INDENTIFICACAO_SALA {
@@ -409,7 +449,7 @@ public class ChatMatrixOrgimpl
 
     @Override
     public ItfUsuarioChat getUsuarioByTelefone(String pTelefone) throws ErroConexaoServicoChat {
-        pTelefone = UtilSBCoreStringTelefone.gerarCeluarInternacional(pTelefone).replace("+", "");
+        pTelefone = UtilSBCoreStringTelefone.gerarCeluarInternacional(pTelefone);
         if (mapaUsuarioChatByTelefone.containsKey(pTelefone)) {
             return mapaUsuarioChatByTelefone.get(pTelefone);
         }
@@ -699,7 +739,7 @@ public class ChatMatrixOrgimpl
         return false;
     }
 
-    public void registrarClasseDeEscutaSalas(Class<? extends RoomEventsCallback> pClasseEscuta) throws ErroConexaoServicoChat {
+    public void registrarClasseDeEscutaSalas(Class<? extends ItfListenerEventoMatrix> pClasseEscuta) throws ErroConexaoServicoChat {
         classeEscutaSalas = pClasseEscuta;
         iniciarConexaoDeEscuta();
     }
@@ -737,18 +777,32 @@ public class ChatMatrixOrgimpl
             if (classeEscutaSalas == null) {
                 throw new ErroConexaoServicoChat("a classe de escuta não foi definida");
             }
-            String user = getConfiguracao().getPropriedade(FabConfigApiMatrixChat.USUARIO_ADMIN);
-            String pass = getConfiguracao().getPropriedade(FabConfigApiMatrixChat.SENHA_USUARIO_ADMIN);
-            monitor = new MonitorConexao(user, pass);
-
+            monitor = new SessaoMatrix(this);
             monitor.start();
 
-            try {
-                sleep(5000);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ChatMatrixOrgimpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    private ItfListenerEventoMatrix verificadorAutoMonitoramento;
+
+    public synchronized boolean isSalaMonitoramentoAutomatica(String pNomeSala) {
+        if (verificadorAutoMonitoramento == null) {
+            if (classeEscutaSalas != null) {
+                try {
+                    Constructor construtor = classeEscutaSalas.getConstructor(ItfChatSalaBean.class);
+                    verificadorAutoMonitoramento = (ItfListenerEventoMatrix) construtor.newInstance((ItfChatSalaBean) null);
+
+                } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                    return false;
+                }
             }
         }
+        try {
+            return verificadorAutoMonitoramento.isSalaComAutoMonitoramento(pNomeSala);
+        } catch (Throwable t) {
+            SBCore.RelatarErroAoUsuario(FabErro.SOLICITAR_REPARO, "falha verificando monitoramento automatico para " + pNomeSala, t);
+            return false;
+        }
+
     }
 
     public synchronized boolean isTemSalaSessaoAtiva(String pCodigo) {
@@ -757,7 +811,11 @@ public class ChatMatrixOrgimpl
 
     }
 
-    public synchronized void salaAbrirSessao(ItfChatSalaBean pSala) throws ErroConexaoServicoChat {
+    public boolean isSalaEscutaDefinida() {
+        return classeEscutaSalas != null;
+    }
+
+    public synchronized SalaChatSessaoEscutaAtiva salaAbrirSessao(ItfChatSalaBean pSala) throws ErroConexaoServicoChat {
 
         iniciarConexaoDeEscuta();
         if (pSala == null || UtilSBCoreStringValidador.isNuloOuEmbranco(pSala.getCodigoChat())) {
@@ -765,17 +823,18 @@ public class ChatMatrixOrgimpl
         }
         if (mapasalaSessaoAtiva.containsKey(pSala.getCodigoChat())) {
             System.out.println("A sala " + pSala.getCodigoChat() + " Já se encontrava na escuta");
-            return;
+            return mapasalaSessaoAtiva.get(pSala.getCodigoChat());
         }
 
         try {
 
             Constructor construtor = classeEscutaSalas.getConstructor(ItfChatSalaBean.class);
 
-            SalaChatSessaoEscutaAtiva novaSala = new SalaChatSessaoEscutaAtiva(pSala, (RoomEventsCallback) construtor.newInstance(pSala));
+            SalaChatSessaoEscutaAtiva novaSala = new SalaChatSessaoEscutaAtiva(pSala, (ItfListenerEventoMatrix) construtor.newInstance(pSala));
             System.out.println("Novo Listener adicionado para sala " + novaSala.getSala().getCodigoChat());
             monitor.adicionarLister(novaSala);
             mapasalaSessaoAtiva.put(pSala.getCodigoChat(), novaSala);
+            return mapasalaSessaoAtiva.get(pSala.getCodigoChat());
         } catch (NoSuchMethodException ex) {
             throw new UnsupportedOperationException("A classe de escuta não possui um método construtor com " + ItfChatSalaBean.class.getSimpleName());
         } catch (SecurityException ex) {
@@ -796,7 +855,15 @@ public class ChatMatrixOrgimpl
 
         if (pSala.getCodigoChat() == null) {
             sala = getSalaCriandoSeNaoExistir(pSala);
+        } else {
+            sala = pSala;
         }
+        if (pUsuario != null) {
+            if (pUsuario.getCodigoUsuario().equals(getUsuarioAdmin().getCodigoUsuario())) {
+                pUsuario = null;
+            }
+        }
+
         String codigoMensagem = pcodigoMensagem;
         if (UtilSBCoreStringValidador.isNuloOuEmbranco(codigoMensagem)) {
             codigoMensagem = String.valueOf((new Date().getTime() + pMensagem.hashCode()));
@@ -818,13 +885,18 @@ public class ChatMatrixOrgimpl
             resp = FabApiRestIntMatrixChatSalas.SALA_ENVIAR_MENSAGEM_TEXTO_SIMPLES
                     .getAcao(pSala.getCodigoChat(), codigoMensagem, pMensagem).getResposta();
         } else {
-
-            if (!pSala.getUsuarios().stream().filter(usr -> usr.getCodigoUsuario().equals(pUsuario.getCodigoUsuario())).findFirst().isPresent()) {
+            final ItfUsuarioChat usuarioMensagem = pUsuario;
+            if (!pSala.getUsuarios().stream().filter(usr -> usr.getCodigoUsuario().equals(usuarioMensagem.getCodigoUsuario())).findFirst().isPresent()) {
                 salaAdicionarMembro(pSala, pUsuario.getCodigoUsuario());
             }
 
-            ItfTokenGestao gestao = FabApiRestIntMatrixChatSalas.SALA_ENVIAR_MENSAGEM_TEXTO_SIMPLES.getGestaoToken(pUsuario);
-            String tokenUsuario = gestao.getToken();
+            GestaoTokenRestIntmatrixchat gestao = (GestaoTokenRestIntmatrixchat) FabApiRestIntMatrixChatSalas.SALA_ENVIAR_MENSAGEM_TEXTO_SIMPLES.getGestaoToken(pUsuario);
+            if (!gestao.isTemTokemAtivo()) {
+                gestao.gerarNovoToken();
+            }
+            if (!gestao.isTemTokemAtivo()) {
+                throw new ErroConexaoServicoChat("Falha autenticando com o usuário " + pUsuario.getNome());
+            }
             resp = FabApiRestIntMatrixChatSalas.SALA_ENVIAR_MENSAGEM_TEXTO_SIMPLES
                     .getAcao(pUsuario, pSala.getCodigoChat(), codigoMensagem, pMensagem).getResposta();
         }
@@ -1013,6 +1085,11 @@ public class ChatMatrixOrgimpl
     public boolean validarTokenOuGerarNovo(ItfUsuarioChat pUsuario, String pCodigo, String pSenha) throws ErroRegraDeNEgocioChat, ErroConexaoServicoChat {
         String senha = pSenha;
         String codUsuario = pCodigo;
+        if (pUsuario != null) {
+            if (getUsuarioAdmin().getCodigoUsuario().equals(pUsuario.getCodigoUsuario())) {
+                pUsuario = null;
+            }
+        }
 
         GestaoTokenRestIntmatrixchat gestao = null;
         if (pUsuario == null) {
@@ -1160,7 +1237,7 @@ public class ChatMatrixOrgimpl
     }
 
     @Override
-    public boolean salaNotificarLeitura(ItfChatSalaBean pSala, ItfUsuarioChat pUsuario, String pCodigoReciboMatix) {
+    public boolean salaNotificarLeitura(String pCodigoSala, ItfUsuarioChat pUsuario, String pCodigoReciboMatix) {
 
         try {
             validarTokenOuGerarNovo(pUsuario, pUsuario.getCodigoUsuario(), gerarSenhaPadrao(pUsuario));
@@ -1168,7 +1245,7 @@ public class ChatMatrixOrgimpl
             return false;
         }
 
-        ItfRespostaWebServiceSimples resp = FabApiRestIntMatrixChatSalas.SALA_MARCAR_COMO_LIDO.getAcao(pUsuario, pSala.getCodigoChat(), pCodigoReciboMatix).getResposta();
+        ItfRespostaWebServiceSimples resp = FabApiRestIntMatrixChatSalas.SALA_MARCAR_COMO_LIDO.getAcao(pUsuario, pCodigoSala, pCodigoReciboMatix).getResposta();
         return resp.isSucesso();
     }
 
@@ -1196,11 +1273,14 @@ public class ChatMatrixOrgimpl
         if (telefone == null) {
             throw new ErroRegraDeNEgocioChat("O Telefone não é válido");
         }
-        telefone = telefone.replace("+", "");
 
         ItfUsuarioChat usr = getUsuarioByTelefone(pWhatsappTelefone);
-        if (!usr.getCodigoUsuario().contains(".ct:")) {
-            usr = null;
+        if (usr != null && !usr.getCodigoUsuario().contains(".ct:")) {
+            if (usr.getCodigoUsuario().contains(".at:")) {
+                throw new ErroRegraDeNEgocioChat("Já existe um usuário de atendimento vinculado ao número  " + pWhatsappTelefone);
+            } else {
+                throw new ErroRegraDeNEgocioChat("Um usuário vinculado ao telefone " + pWhatsappTelefone + " foi encontrado, mas o codigo não é do tipo Contato");
+            }
         }
         if (usr != null) {
             return usr.getCodigoUsuario();
@@ -1215,7 +1295,8 @@ public class ChatMatrixOrgimpl
     @Override
     public ItfUsuarioChat gerarUsuarioContato(String pNome, String pTelefoneInternacional) throws ErroConexaoServicoChat, ErroRegraDeNEgocioChat {
         String telefoneInternacional = UtilSBCoreStringTelefone.gerarCeluarInternacional(pTelefoneInternacional);
-        telefoneInternacional = telefoneInternacional.replace("+", "");
+
+        //telefoneInternacional = telefoneInternacional.replace("+", "");
         if (telefoneInternacional == null) {
             throw new ErroRegraDeNEgocioChat("Telefone inválido" + pTelefoneInternacional);
         }
@@ -1238,7 +1319,7 @@ public class ChatMatrixOrgimpl
             usuario = novoUsuario;
         } else {
             boolean teveAlteracao = false;
-            if (usuario.getTelefone() == null || !usuario.getTelefone().equals(pTelefoneInternacional)) {
+            if (usuario.getTelefone() == null || !usuario.getTelefone().equals(telefoneInternacional)) {
                 teveAlteracao = true;
             }
             if (usuario.getNome() == null || !usuario.getNome().equals(pNome)) {
@@ -1247,7 +1328,7 @@ public class ChatMatrixOrgimpl
             if (teveAlteracao) {
                 UsuarioChatMatrixOrg usuarioAtualizacao = new UsuarioChatMatrixOrg();
                 usuarioAtualizacao.setNome(pNome);
-                usuarioAtualizacao.setTelefone(pTelefoneInternacional);
+                usuarioAtualizacao.setTelefone(telefoneInternacional);
                 usuarioAtualizacao.setCodigoUsuario(usuario.getCodigoUsuario());
                 usuario = usuarioAtualizar(usuarioAtualizacao);
 

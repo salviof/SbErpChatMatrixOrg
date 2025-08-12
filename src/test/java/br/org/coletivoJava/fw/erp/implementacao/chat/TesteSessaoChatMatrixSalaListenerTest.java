@@ -13,17 +13,17 @@ import br.org.coletivoJava.integracoes.matrixChat.config.FabConfigApiMatrixChat;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import testesFW.ConfigCoreJunitPadraoDevAcaoPermissao;
 
 import com.super_bits.modulosSB.SBCore.ConfigGeral.arquivosConfiguracao.ConfigModulo;
 import org.coletivojava.fw.api.tratamentoErros.ErroPreparandoObjeto;
 import org.junit.Test;
+import testesFW.ConfigCoreJunitPadraoDevLib;
 
 /**
  *
  * @author salvio
  */
-public class TesteMonitoramentoSessaoChat {
+public class TesteSessaoChatMatrixSalaListenerTest {
 
     private static ChatMatrixOrgimpl erpChatService = (ChatMatrixOrgimpl) ERPChat.MATRIX_ORG.getImplementacaoDoContexto();
     private ConfigModulo configuracao;
@@ -32,10 +32,10 @@ public class TesteMonitoramentoSessaoChat {
     public ItfChatSalaBean getSalaRegistradaVendas() throws ErroConexaoServicoChat, ErroPreparandoObjeto {
         ItfUsuarioChat usuarioChat1 = erpChatService.getUsuarioByEmail("salvio@casanovadigital.com.br");
         ItfUsuarioChat usuarioChat2 = erpChatService.getUsuarioByEmail("renata.mota@casanovadigital.com.br");
-        ItfChatSalaBean salaRegistrada = FabTipoSalaMatrix.WTZAP_VENDAS.getSalaMatrix(usuarioChat1, usuarioChat2);
+        ItfChatSalaBean salaRegistrada = FabTipoSalaMatrix.WTZAP_VENDAS.getSalaMatrixPadrao(usuarioChat1, usuarioChat2);
         salaRegistrada = erpChatService.getSalaByNome(salaRegistrada.getApelido());
         if (salaRegistrada == null) {
-            salaRegistrada = FabTipoSalaMatrix.WTZAP_VENDAS.getSalaMatrix(usuarioChat1, usuarioChat2);
+            salaRegistrada = FabTipoSalaMatrix.WTZAP_VENDAS.getSalaMatrixPadrao(usuarioChat1, usuarioChat2);
             salaRegistrada = erpChatService.getSalaCriandoSeNaoExistir(salaRegistrada);
         }
         return salaRegistrada;
@@ -47,7 +47,7 @@ public class TesteMonitoramentoSessaoChat {
             salaRegistrada = erpChatService.getSalaByNome(nomeSala);
             return salaRegistrada;
         } catch (ErroConexaoServicoChat ex) {
-            Logger.getLogger(TesteMonitoramentoSessaoChat.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TesteSessaoChatMatrixSalaListenerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
@@ -55,7 +55,8 @@ public class TesteMonitoramentoSessaoChat {
     @Test
     public void testeMonitoramentoChat() throws ErroConexaoServicoChat {
 
-        SBCore.configurar(new ConfigCoreJunitPadraoDevAcaoPermissao(), SBCore.ESTADO_APP.DESENVOLVIMENTO);
+        SBCore.configurar(new ConfigCoreJunitPadraoDevLib(), SBCore.ESTADO_APP.DESENVOLVIMENTO);
+
         configuracao = SBCore.getConfigModulo(FabConfigApiMatrixChat.class);
         try {
             System.out.println("Ativando monitor de sala do domínio:");
@@ -78,7 +79,7 @@ public class TesteMonitoramentoSessaoChat {
             }
 
         } catch (InterruptedException ex) {
-            Logger.getLogger(TesteMonitoramentoSessaoChat.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TesteSessaoChatMatrixSalaListenerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
