@@ -515,8 +515,9 @@ public class ChatMatrixOrgimpl
             if (!gestaoToken.validarToken()) {
                 gestaoToken.renovarToken();
             }
-            if (gestaoToken.isTemTokemAtivo()) {
-                return null;
+            if (!gestaoToken.isTemTokemAtivo()) {
+                throw new ErroConexaoServicoChat(resposta.getRespostaTexto());
+
             }
         }
         String userId = resposta.getRespostaComoObjetoJson().getString("user_id");

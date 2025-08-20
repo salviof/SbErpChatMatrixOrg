@@ -30,7 +30,8 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
     MATRIX_CHAT_VENDAS,
     MATRIX_CHAT_ATENDIMENTO,
     MATRIX_CHAT_ATENDIMENTO_CHAMADO,
-    MATRIX_CHAT_DEBATE_INTERNO_LEAD_CLIENTE;
+    MATRIX_CHAT_DEBATE_INTERNO_LEAD_CLIENTE,
+    CHAT_DINAMICO_DE_ENTIDADE;
 
     public static FabTipoSalaMatrix getTipoByAlias(String pAlias) {
         for (FabTipoSalaMatrix tipo : FabTipoSalaMatrix.values()) {
@@ -39,6 +40,30 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
             }
         }
         return null;
+    }
+
+    boolean isChatAtendimentoDeContato() {
+        switch (this) {
+
+            case WTZAP_ATENDIMENTO:
+
+            case WTZAP_VENDAS:
+
+            case WTZAP_ATENDIMENTO_GRUPO_CLIENTE:
+
+            case MATRIX_CHAT_VENDAS:
+
+            case MATRIX_CHAT_ATENDIMENTO:
+
+            case MATRIX_CHAT_ATENDIMENTO_CHAMADO:
+                return true;
+            case MATRIX_CHAT_DEBATE_INTERNO_LEAD_CLIENTE:
+
+            case CHAT_DINAMICO_DE_ENTIDADE:
+                return false;
+            default:
+                throw new AssertionError();
+        }
     }
 
     @Override
@@ -60,6 +85,8 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
 
             case WTZAP_ATENDIMENTO_GRUPO_CLIENTE:
                 return "gc";
+            case CHAT_DINAMICO_DE_ENTIDADE:
+                return "chat";
 
             default:
                 throw new AssertionError();
@@ -89,6 +116,11 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
             case MATRIX_CHAT_ATENDIMENTO_CHAMADO:
 
                 return "Abertura de Chamado do cliente";
+            case WTZAP_ATENDIMENTO_GRUPO_CLIENTE:
+                return "Grupo de atendimento";
+
+            case CHAT_DINAMICO_DE_ENTIDADE:
+                return "Chat dinâmico";
 
             default:
                 throw new AssertionError();
@@ -117,11 +149,25 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
             List<ItfUsuarioChat> pUsuariosAtendimento,
             List<ItfUsuarioChat> pUsuarioContatos
     ) throws ErroPreparandoObjeto {
+        if (pUsuarioContatos == null) {
+            pUsuarioContatos = new ArrayList<>();
+        }
 
         SalaMatrxOrg novaSala = new SalaMatrxOrg();
+        ItfUsuarioChat usuarioContatoPrincipal = null;
         try {
-            if (pUsuarioContatos.isEmpty()) {
-                throw new UnsupportedOperationException("Pelomenos um usuário de contato é obrigatorio");
+            if (isChatAtendimentoDeContato()) {
+
+                if (pUsuarioContatos.isEmpty()) {
+                    throw new UnsupportedOperationException("Pelomenos um usuário de contato é obrigatorio");
+                }
+                novaSala.setUsuariosExternos(pUsuarioContatos);
+                if (pUsuarioContatos != null && !pUsuarioContatos.isEmpty()) {
+                    usuarioContatoPrincipal = pUsuarioContatos.get(0);
+                }
+                if (pUsuarioContatos.get(0).getTelefone() == null || pUsuarioContatos.get(0).getTelefone().isEmpty()) {
+                    throw new ErroPreparandoObjeto(pBeanVinculado, "O telefone do usuário externo não pode ser nulo");
+                }
             }
 
             if (pUsuariosAtendimento.isEmpty()) {
@@ -131,14 +177,12 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
             throw new ErroPreparandoObjeto(pBeanVinculado, t);
         }
 
-        if (pUsuarioContatos.get(0).getTelefone() == null || pUsuarioContatos.get(0).getTelefone().isEmpty()) {
-            throw new ErroPreparandoObjeto(pBeanVinculado, "O telefone do usuário externo não pode ser nulo");
-        }
         if (pUsuariosAtendimento.get(0).getEmail() == null || pUsuariosAtendimento.get(0).getEmail().isEmpty()) {
             throw new ErroPreparandoObjeto(pBeanVinculado, "O email do usuário interno não pode ser nulo");
         }
-        novaSala.setUsuariosDaEmpresa(pUsuarioContatos);
-        novaSala.setUsuariosExternos(pUsuariosAtendimento);
+
+        novaSala.setUsuariosDaEmpresa(pUsuariosAtendimento);
+
         novaSala.setUsuarios(new ArrayList<>());
         String slug = getSlug();
 
@@ -148,11 +192,6 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
         ItfUsuarioChat usuarioAtendimentoPrincipal = null;
         if (pUsuariosAtendimento != null && !pUsuariosAtendimento.isEmpty()) {
             usuarioAtendimentoPrincipal = pUsuariosAtendimento.get(0);
-        }
-
-        ItfUsuarioChat usuarioContatoPrincipal = null;
-        if (pUsuarioContatos != null && !pUsuarioContatos.isEmpty()) {
-            usuarioContatoPrincipal = pUsuarioContatos.get(0);
         }
 
         StringBuilder nomeSala = new StringBuilder();
@@ -234,9 +273,9 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
                 String apelidoChat = UtilMatrixERP.gerarAliasSalaIDCanonicoObjetoRelacionado(pBeanVinculado, slug);
                 novaSala.setApelido(apelidoChat);
                 novaSala.setNome(pBeanVinculado.getNome());
-                for (ItfUsuarioChat usr : pUsuarioContatos) {
-                    if (!novaSala.getUsuarios().contains(usr)) {
-                        novaSala.getUsuarios().add(usr);
+                for (ItfUsuarioChat usratendimento : pUsuariosAtendimento) {
+                    if (!novaSala.getUsuarios().contains(usratendimento)) {
+                        novaSala.getUsuarios().add(usratendimento);
                     }
                 }
                 for (ItfUsuarioChat usr : pUsuarioContatos) {
@@ -245,6 +284,23 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
                     }
                 }
 
+                return novaSala;
+            case WTZAP_ATENDIMENTO_GRUPO_CLIENTE:
+                break;
+            case CHAT_DINAMICO_DE_ENTIDADE:
+                String apelidoChatDinamico = UtilMatrixERP.gerarAliasSalaIDCanonicoObjetoRelacionado(pBeanVinculado, slug);
+                novaSala.setApelido(apelidoChatDinamico);
+                novaSala.setNome(pBeanVinculado.getNome());
+                for (ItfUsuarioChat usr : pUsuariosAtendimento) {
+                    if (!novaSala.getUsuarios().contains(usr)) {
+                        novaSala.getUsuarios().add(usr);
+                    }
+                }
+                for (ItfUsuarioChat usr : pUsuarioContatos) {
+                    if (!novaSala.getUsuarios().contains(usr)) {
+                        novaSala.getUsuarios().add(usr);
+                    }
+                }
                 return novaSala;
 
             default:
@@ -264,16 +320,18 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
             case WTZAP_ATENDIMENTO_GRUPO_CLIENTE:
                 return getSalaMatrix(null, pUsuarioDono, Lists.newArrayList(pUsuarioAtendimento), Lists.newArrayList(pUsuarioContato));
 
+            case CHAT_DINAMICO_DE_ENTIDADE:
+
+            case MATRIX_CHAT_ATENDIMENTO_CHAMADO:
+
             case MATRIX_CHAT_VENDAS:
 
             case MATRIX_CHAT_ATENDIMENTO:
 
-            case MATRIX_CHAT_ATENDIMENTO_CHAMADO:
-
             case MATRIX_CHAT_DEBATE_INTERNO_LEAD_CLIENTE:
 
             default:
-                throw new ErroPreparandoObjeto(new SalaMatrxOrg(), "tipo de sala não é compatível com estes parametros");
+                throw new ErroPreparandoObjeto(new SalaMatrxOrg(), "tipo de sala não é compatível com estes parametros, envie a entidade relacionada ao " + this.toString());
         }
 
     }
@@ -320,6 +378,8 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
 
             case MATRIX_CHAT_DEBATE_INTERNO_LEAD_CLIENTE:
                 return "Debates sobre contratos";
+            case CHAT_DINAMICO_DE_ENTIDADE:
+                return "Debates Internos";
 
             default:
                 throw new AssertionError();
