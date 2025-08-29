@@ -4,6 +4,9 @@
  */
 package br.org.coletivoJava.fw.api.erp.chat.notificacoes;
 
+import br.org.coletivoJava.fw.api.erp.chat.model.ComandoDeAtendimento;
+import br.org.coletivoJava.fw.api.erp.chat.model.ErroComandoAtendimentoInvalido;
+import br.org.coletivoJava.fw.api.erp.chat.model.ItfListenerEventoComandoAtendimento;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfNotificacaoUsuarioChat;
 import br.org.coletivoJava.fw.api.erp.chat.notificacoes.ItfRetornoDeChamadaDeNotificacao;
 
@@ -11,14 +14,10 @@ import br.org.coletivoJava.fw.api.erp.chat.notificacoes.ItfRetornoDeChamadaDeNot
  *
  * @author salvio
  */
-public class ListenerNotificacaoTestes implements ItfRetornoDeChamadaDeNotificacao {
+public class ListenerNotificacaoTestes implements ItfListenerEventoComandoAtendimento {
 
     @Override
-    public void onEventReceived(ItfNotificacaoUsuarioChat pNotificacao) {
-        System.out.println(pNotificacao.getCodigoNotificacao());
-        System.out.println(pNotificacao.getCodigoSalaOrigem());
-        System.out.println(pNotificacao.getRemetente());
-        System.out.println(pNotificacao.getTipoEvento());
-        System.out.println(pNotificacao.getConteudo());
+    public void processarComando(ComandoDeAtendimento pComando) throws ErroComandoAtendimentoInvalido {
+        System.out.println("processando comando " + pComando.getEvento().getContent().toString());
     }
 }

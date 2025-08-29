@@ -95,7 +95,7 @@ public class SessaoMatrix extends Thread {
 
     public SessaoMatrix(ChatMatrixOrgimpl pServicoMatrix, ItfUsuarioChat pUsuarioAtividade, String pSenha) throws ErroRegraDeNEgocioChat {
         SERVICO_MATRIX = pServicoMatrix;
-        if (!SERVICO_MATRIX.isUmUsuarioAtendimento(pUsuarioAtividade.getCodigoUsuario())) {
+        if (!SERVICO_MATRIX.isUmUsuarioAtendimento(pUsuarioAtividade)) {
             throw new ErroRegraDeNEgocioChat("Para monitorar um umsuario de contato envie um usuario contato no parametro");
         }
         String url = SBCore.getConfigModulo(FabConfigApiMatrixChat.class).getPropriedade(FabConfigApiMatrixChat.URL_MATRIX_SERVER);

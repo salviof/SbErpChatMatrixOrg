@@ -16,6 +16,9 @@ import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.RespostaSalaApi
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.SalaChatSessaoEscutaAtiva;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.UsuarioChatMatrixOrg;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfListenerEventoMatrix;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComandoDeAtendimento;
+import br.org.coletivoJava.fw.api.erp.chat.model.ErroComandoAtendimentoInvalido;
+import br.org.coletivoJava.fw.api.erp.chat.model.ItfListenerEventoComandoAtendimento;
 import br.org.coletivoJava.integracoes.matrixChat.FabApiRestIntMatrixChatSalas;
 import br.org.coletivoJava.integracoes.matrixChat.FabApiRestIntMatrixChatUsuarios;
 import br.org.coletivoJava.integracoes.matrixChat.FabApiRestIntMatrixSpaces;
@@ -38,12 +41,10 @@ import com.super_bits.modulosSB.SBCore.integracao.libRestClient.WS.conexaoWebSer
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.token.ItfTokenGestao;
 import com.super_bits.modulosSB.SBCore.modulos.erp.ErroJsonInterpredador;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ItfUsuario;
-import de.jojii.matrixclientserver.Callbacks.RoomEventsCallback;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
 import java.io.InputStream;
-import static java.lang.Thread.sleep;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -72,7 +73,7 @@ public class ChatMatrixOrgimpl
     private static Map<String, SalaChatSessaoEscutaAtiva> mapasalaSessaoAtiva = new HashMap<>();
     private static Class classeEscutaSalas;
     private static Class classeEscutaNotificacao;
-    private static SincronizacaoNotificacoes sincronizadorNotificacoes;
+
     private static SessaoMatrix monitor;
     private final static RespostaSalaApiEscuta respSalaApi = new RespostaSalaApiEscuta();
     private static ConfigModulo configuracao;
@@ -255,7 +256,7 @@ public class ChatMatrixOrgimpl
 
     }
 
-    public boolean isUmUsuarioAtendimento(String pCodigo) {
+    private boolean isUmUsuarioAtendimento(String pCodigo) {
         if (pCodigo == null) {
             return false;
         }
@@ -273,6 +274,12 @@ public class ChatMatrixOrgimpl
     public boolean isUmUsuarioAtendimento(ItfUsuarioChat pUsuarioAtendimento) {
         if (pUsuarioAtendimento == null) {
             return false;
+        }
+        if (pUsuarioAtendimento.getEmail() != null && pUsuarioAtendimento.getEmail().contains("@")) {
+
+            if (pUsuarioAtendimento.getEmail().split("@")[1].endsWith(FabConfigApiMatrixChat.DOMINIO_FEDERADO.getValorParametroSistema())) {
+                return true;
+            }
         }
         return isUmUsuarioAtendimento(pUsuarioAtendimento.getCodigoUsuario());
     }
@@ -745,31 +752,31 @@ public class ChatMatrixOrgimpl
         iniciarConexaoDeEscuta();
     }
 
-    public void registrarClasseEscutaNotificacoes(Class<? extends ItfRetornoDeChamadaDeNotificacao> pClasseEscuta) throws ErroConexaoServicoChat {
+    public void registrarClasseEscutaNotificacoes(Class<? extends ItfListenerEventoComandoAtendimento> pClasseEscuta) throws ErroConexaoServicoChat {
         classeEscutaNotificacao = pClasseEscuta;
         if (pClasseEscuta == null) {
             throw new ErroConexaoServicoChat("A classe de escuta é obrigatória");
         }
-        iniciarEscutaNotificacoes();
+
     }
 
-    private synchronized void iniciarEscutaNotificacoes() throws ErroConexaoServicoChat {
-        if (classeEscutaNotificacao != null) {
-            if (sincronizadorNotificacoes == null) {
-                sincronizadorNotificacoes = new SincronizacaoNotificacoes();
-                try {
-                    sincronizadorNotificacoes.addNotificadorEventListener((ItfRetornoDeChamadaDeNotificacao) classeEscutaNotificacao.newInstance());
-                } catch (InstantiationException ex) {
-                    throw new ErroConexaoServicoChat("Falha instanciando listener de notificação padrão");
-                } catch (IllegalAccessException ex) {
-                    throw new ErroConexaoServicoChat("Falha instanciando listener de notificação padrão");
-                }
-            } else {
-                sincronizadorNotificacoes.stopSyncee();
-            }
-            sincronizadorNotificacoes.startSyncee();
+    private static ItfListenerEventoComandoAtendimento escutaComandos;
 
+    public synchronized void escutaNotificacoes(ComandoDeAtendimento pComando) throws ErroComandoAtendimentoInvalido {
+        if (classeEscutaNotificacao == null) {
+            throw new ErroComandoAtendimentoInvalido("A classe de escuta das notificações não foi definida");
         }
+        if (escutaComandos == null) {
+            try {
+                escutaComandos = (ItfListenerEventoComandoAtendimento) classeEscutaNotificacao.newInstance();
+            } catch (InstantiationException | IllegalAccessException ex) {
+                Logger.getLogger(ChatMatrixOrgimpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        if (pComando.getEvento().getRoom_id() != null && !pComando.getEvento().getRoom_id().isEmpty()) {
+            escutaComandos.processarComando(pComando);
+        }
+
     }
 
     private synchronized void iniciarConexaoDeEscuta() throws ErroConexaoServicoChat {
@@ -1274,21 +1281,20 @@ public class ChatMatrixOrgimpl
         if (telefone == null) {
             throw new ErroRegraDeNEgocioChat("O Telefone não é válido");
         }
-
-        ItfUsuarioChat usr = getUsuarioByTelefone(pWhatsappTelefone);
-        if (usr != null && !usr.getCodigoUsuario().contains(".ct:")) {
-            if (usr.getCodigoUsuario().contains(".at:")) {
-                throw new ErroRegraDeNEgocioChat("Já existe um usuário de atendimento vinculado ao número  " + pWhatsappTelefone);
-            } else {
-                throw new ErroRegraDeNEgocioChat("Um usuário vinculado ao telefone " + pWhatsappTelefone + " foi encontrado, mas o codigo não é do tipo Contato");
-            }
-        }
-        if (usr != null) {
-            return usr.getCodigoUsuario();
-        } else {
-
-            String codigo = gerarCodigoUsuario(pNome, telefone, "ct");
+        String codigo = gerarCodigoUsuario(pNome, telefone, "ct");
+        ItfUsuarioChat usr = getUsuarioByCodigo(codigo);
+        if (usr == null) {
             return codigo;
+        }
+
+        usr = getUsuarioByTelefone(pWhatsappTelefone);
+        if (usr == null) {
+            return codigo;
+        }
+        if (isUmUsuarioAtendimento(usr)) {
+            throw new ErroRegraDeNEgocioChat("Um usuário vinculado ao telefone " + pWhatsappTelefone + " foi encontrado, mas o codigo não é do tipo Contato");
+        } else {
+            return usr.getCodigoUsuario();
         }
 
     }

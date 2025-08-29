@@ -95,6 +95,7 @@ public abstract class EscutaSalaMatrixAbst implements ItfListenerEventoMatrix {
         FabTipoPacoteDeAcaoMatrix tipoEvento = pEvento.getTipoEvento();
         if (tipoEvento == null) {
             System.out.println("ignorando evento tipo:" + tipo);
+            return;
         }
 
         try {
@@ -102,6 +103,7 @@ public abstract class EscutaSalaMatrixAbst implements ItfListenerEventoMatrix {
             inicioProcessamento(pEvento);
             switch (tipoEvento) {
                 case MENSAGEM:
+
                     eventoMensagem(pEvento);
                     break;
                 case DIGITANDO:

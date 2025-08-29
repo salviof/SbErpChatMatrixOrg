@@ -21,9 +21,9 @@ public class SincronizacaoSalasMatrix extends SincronizacaoAbstrata {
             + "    \"room_id\",\n"
             + "    \"event_id\"\n"
             + "  ],\n"
-            + "  \"presence\": {\n"
-            + "    \"types\": [\"m.presence\"]\n"
-            + "  },\n"
+            + "\"presence\": {\n"
+            + "    \"types\": []\n"
+            + "  },"
             + "  \"room\": {\n"
             + "    \"state\": {\n"
             + "      \"types\": [\"m.room.*\"]\n"
@@ -41,7 +41,13 @@ public class SincronizacaoSalasMatrix extends SincronizacaoAbstrata {
 
     @Override
     public boolean isEventoCompativelListener(ItfListenerEventoMatrix pListener, ItfEventoMatix pEvento) {
-        return pListener.isElegivel(pEvento);
+        if (pEvento.getRoom_id() != null && pListener.getSala() != null) {
+            if (pEvento.getRoom_id().equals(pListener.getSala().getCodigoChat())) {
+                return pListener.isElegivel(pEvento);
+            }
+        }
+        return false;
+
     }
 
 }

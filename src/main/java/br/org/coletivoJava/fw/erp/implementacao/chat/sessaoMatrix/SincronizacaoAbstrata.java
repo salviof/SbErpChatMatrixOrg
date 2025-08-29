@@ -1,14 +1,16 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat.sessaoMatrix;
 
-import br.org.coletivoJava.fw.api.erp.chat.ChatMatrixOrg;
 import br.org.coletivoJava.fw.api.erp.chat.ErroConexaoServicoChat;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
 import br.org.coletivoJava.fw.erp.implementacao.chat.ChatMatrixOrgimpl;
 import br.org.coletivoJava.fw.api.erp.chat.ErroMtxParalizacaoDeProcessamento;
-import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.pacotematrix.EventMatrixParsing;
+import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.pacotematrix.PacoteMatrixParsing;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.SalaChatSessaoEscutaAtiva;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfEventoMatix;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfListenerEventoMatrix;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComandoDeAtendimento;
+import br.org.coletivoJava.fw.api.erp.chat.model.ErroComandoAtendimentoInvalido;
+import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.pacotematrix.PacoteDeEventosMatrix;
 import br.org.coletivoJava.integracoes.matrixChat.config.FabConfigApiMatrixChat;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
 import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreJson;
@@ -104,6 +106,8 @@ public abstract class SincronizacaoAbstrata {
 
     private Thread eventListenerThread;
 
+    private List<String> salaNaoMonitorada = new ArrayList<>();
+
     private void runEventListener(String filterID) {
         if (eventListenerThread == null) {
             eventListenerThread = new Thread(() -> {
@@ -169,14 +173,30 @@ public abstract class SincronizacaoAbstrata {
                                 continue;
                             }
                         }
-                        if (dadosJson == null || !dadosJson.containsKey("next_batch")) {
+                        if (dadosJson == null || !dadosJson.containsKey("next_batch") || !dadosJson.containsKey("rooms")) {
                             continue;
                         }
                         try {
                             JSONObject syncData = new JSONObject(data);
-                            List<ItfEventoMatix> eventosDeSala = EventMatrixParsing.parseEventoSalas(syncData);
+
+                            PacoteDeEventosMatrix pacote = PacoteMatrixParsing.parseEventoSalas(syncData, servicoMatrix);
+
+                            List<ItfEventoMatix> eventosDeSala = pacote.getEventos();
+
+                            List<ComandoDeAtendimento> comandos = pacote.getComandos();
+
+                            for (ComandoDeAtendimento comando : comandos) {
+
+                                try {
+                                    servicoMatrix.escutaNotificacoes(comando);
+                                } catch (ErroComandoAtendimentoInvalido ex) {
+                                    continue;
+                                }
+
+                            }
 
                             for (ItfEventoMatix evento : eventosDeSala) {
+
                                 Optional<ItfListenerEventoMatrix> pesquisaListener = listenersDeSalas.stream().filter(listener -> isEventoCompativelListener(listener, evento)).findFirst();
                                 if (pesquisaListener.isPresent()) {
                                     ItfListenerEventoMatrix listener = pesquisaListener.get();
@@ -192,7 +212,7 @@ public abstract class SincronizacaoAbstrata {
                                         }
                                     }
                                 } else {
-                                    if (evento.getRoom_id() == null) {
+                                    if (evento.getRoom_id() == null || evento.getRoom_id().isEmpty() || salaNaoMonitorada.contains(evento.getRoom_id())) {
                                         continue;
                                     }
                                     try {
@@ -211,6 +231,9 @@ public abstract class SincronizacaoAbstrata {
                                                 System.out.println("Falha processando evento " + evento.getRaw().toString(4));
                                                 continue;
                                             }
+                                        } else {
+                                            salaNaoMonitorada.add(evento.getRoom_id());
+                                            //servicoMatrix.salaEnviarMesagem(sala, "Sala não monitorada, essa mensagem não foi processada");
                                         }
                                     } catch (ErroConexaoServicoChat ex) {
                                         Logger.getLogger(SincronizacaoAbstrata.class.getName()).log(Level.SEVERE, null, ex);
@@ -218,26 +241,28 @@ public abstract class SincronizacaoAbstrata {
 
                                 }
                             }
-
+                            if (pausarProcessamento) {
+                                continue;
+                            }
+                            String nextBatch = dadosJson.getString("next_batch");
+                            nextURL = baseurl + "&since=" + nextBatch;
+                            SBCore.getConfigModulo(FabConfigApiMatrixChat.class).getRepositorioDeArquivosExternos().putConteudoRecursoExterno(NOME_REPOSITORIO_NEXT_BATCH, nextBatch);
+                            FileHelper.writeFile(Files.sync_next_batch, nextBatch);
                         } catch (JSONException ea) {
                             SBCore.RelatarErro(FabErro.SOLICITAR_REPARO, "Matrix enviou um JSON INVÁLIDO !!! :O " + data, ea);
                             ea.printStackTrace();
                             continue;
+                        } catch (Throwable t) {
+                            SBCore.RelatarErro(FabErro.SOLICITAR_REPARO, "Falha processando  " + data, t);
+                            pausarProcessamento = true;
                         }
-                        if (pausarProcessamento) {
-                            continue;
-                        }
-                        String nextBatch = dadosJson.getString("next_batch");
-                        nextURL = baseurl + "&since=" + nextBatch;
-                        SBCore.getConfigModulo(FabConfigApiMatrixChat.class).getRepositorioDeArquivosExternos().putConteudoRecursoExterno(NOME_REPOSITORIO_NEXT_BATCH, nextBatch);
-                        FileHelper.writeFile(Files.sync_next_batch, nextBatch);
 
                     }
                 }
             });
-        }
 
-        eventListenerThread.start();
+            eventListenerThread.start();
+        }
     }
 
     public abstract boolean isEventoCompativelListener(ItfListenerEventoMatrix pListener, ItfEventoMatix pEvento);
