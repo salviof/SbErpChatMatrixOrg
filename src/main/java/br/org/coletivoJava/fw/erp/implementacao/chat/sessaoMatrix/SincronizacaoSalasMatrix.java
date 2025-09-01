@@ -43,7 +43,7 @@ public class SincronizacaoSalasMatrix extends SincronizacaoAbstrata {
     public boolean isEventoCompativelListener(ItfListenerEventoMatrix pListener, ItfEventoMatix pEvento) {
         if (pEvento.getRoom_id() != null && pListener.getSala() != null) {
             if (pEvento.getRoom_id().equals(pListener.getSala().getCodigoChat())) {
-                return pListener.isElegivel(pEvento);
+                return true;
             }
         }
         return false;
