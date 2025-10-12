@@ -29,6 +29,8 @@ public class UsuarioChatMatrixOrg extends ItemNormal implements ItfUsuarioChat {
     @InfoCampo(tipo = FabTipoAtributoObjeto.EMAIL)
     private String email;
 
+    private String codigoCRMUniversal;
+
     private List<String> emailsSecudarios;
 
     @Override
@@ -134,17 +136,25 @@ public class UsuarioChatMatrixOrg extends ItemNormal implements ItfUsuarioChat {
 
     @Override
     public ItfLocalPostagem getLocalizacao() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return null;
     }
 
     @Override
     public void instanciarNovoEndereco() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+
     }
 
     @Override
     public void setLocalizacao(ItfLocal pLocal) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public String getCodigoCRMUniversal() {
+        return codigoCRMUniversal;
+    }
+
+    public void setCodigoCRMUniversal(String codigoCRMUniversal) {
+        this.codigoCRMUniversal = codigoCRMUniversal;
     }
 
 }

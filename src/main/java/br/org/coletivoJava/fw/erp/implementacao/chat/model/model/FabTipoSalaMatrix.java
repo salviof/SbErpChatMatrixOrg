@@ -17,6 +17,7 @@ import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basic
 import java.util.ArrayList;
 import java.util.List;
 import org.coletivojava.fw.api.tratamentoErros.ErroPreparandoObjeto;
+import org.coletivojava.fw.api.tratamentoErros.FabErro;
 
 /**
  *
@@ -129,17 +130,49 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
     }
 
     @Override
-    public String getAliasSala(ItfUsuarioChat pUSuarioLead) {
+    public String getAliasSalaParaUsuario(ItfUsuarioChat pUSuarioLead) {
         String slug = getSlug();
+        switch (this) {
+            case WTZAP_ATENDIMENTO:
+            case WTZAP_VENDAS:
 
-        return UtilMatrixERP.gerarAliasSalaIDCanonicoUsuarioWhatsapp(pUSuarioLead, slug);
+                return UtilMatrixERP.gerarAliasSalaIDCanonicoUsuarioWhatsapp(pUSuarioLead, slug);
+            case WTZAP_ATENDIMENTO_GRUPO_CLIENTE:
+                throw new UnsupportedOperationException("Atendimento de grupo ainda não foi implmentado");
+            case MATRIX_CHAT_ATENDIMENTO:
+            case MATRIX_CHAT_VENDAS:
+            case MATRIX_CHAT_ATENDIMENTO_CHAMADO:
+            case MATRIX_CHAT_DEBATE_INTERNO_LEAD_CLIENTE:
+            case CHAT_DINAMICO_DE_ENTIDADE:
+
+            default:
+                throw new UnsupportedOperationException("Utilize uma entidade que não seja ItfUsuario chat para gerar o Apelido");
+
+        }
 
     }
 
     @Override
-    public String getAliasSala(ItfBeanSimplesSomenteLeitura pBeanVinculado) {
+    public String getAliasSalaParaEnttidade(ItfBeanSimplesSomenteLeitura pBeanVinculado) {
         String slug = getSlug();
-        return UtilMatrixERP.gerarAliasSalaIDCanonicoObjetoRelacionado(pBeanVinculado, slug);
+
+        switch (this) {
+            case WTZAP_ATENDIMENTO:
+            case WTZAP_VENDAS:
+                throw new UnsupportedOperationException("Utilize uma entidade que não seja ItfUsuario chat para gerar o Apelido");
+
+            case WTZAP_ATENDIMENTO_GRUPO_CLIENTE:
+                throw new UnsupportedOperationException("Atendimento de grupo ainda não foi implmentado");
+            case MATRIX_CHAT_ATENDIMENTO:
+            case MATRIX_CHAT_VENDAS:
+            case MATRIX_CHAT_ATENDIMENTO_CHAMADO:
+            case MATRIX_CHAT_DEBATE_INTERNO_LEAD_CLIENTE:
+            case CHAT_DINAMICO_DE_ENTIDADE:
+                return UtilMatrixERP.gerarAliasSalaIDCanonicoObjetoRelacionado(pBeanVinculado, slug);
+            default:
+                throw new UnsupportedOperationException("Utilize uma entidade ItfUsuarioChat");
+
+        }
 
     }
 
@@ -158,7 +191,7 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
         try {
             if (isChatAtendimentoDeContato()) {
 
-                if (pUsuarioContatos.isEmpty()) {
+                if (pUsuarioContatos == null || pUsuarioContatos.isEmpty()) {
                     throw new UnsupportedOperationException("Pelomenos um usuário de contato é obrigatorio");
                 }
                 novaSala.setUsuariosExternos(pUsuarioContatos);
@@ -171,10 +204,15 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
             }
 
             if (pUsuariosAtendimento.isEmpty()) {
-                throw new UnsupportedOperationException("Pelomenos um usuário de contato é obrigatorio");
+                throw new UnsupportedOperationException("Pelomenos um usuário de atendimento é obrigatorio");
             }
         } catch (Throwable t) {
-            throw new ErroPreparandoObjeto(pBeanVinculado, t);
+            SBCore.RelatarErroAoUsuario(FabErro.SOLICITAR_REPARO, "Falha criando sala matrix ideal" + t.getMessage(), t);
+            if (pBeanVinculado != null) {
+                throw new ErroPreparandoObjeto(pBeanVinculado, t);
+            } else {
+                throw new ErroPreparandoObjeto(novaSala, t);
+            }
         }
 
         if (pUsuariosAtendimento.get(0).getEmail() == null || pUsuariosAtendimento.get(0).getEmail().isEmpty()) {
@@ -209,7 +247,7 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
                 nomeSala.append("_");
                 nomeSala.append(slug);
 
-                novaSala.setApelido(UtilMatrixERP.gerarAliasSalaIDCanonicoUsuarioWhatsapp(usuarioContatoPrincipal, slug));
+                novaSala.setApelido(getAliasSalaParaUsuario(usuarioContatoPrincipal));
                 novaSala.setNome(nomeSala.toString());
 
                 novaSala.getUsuarios().add(usuarioContatoPrincipal);
@@ -228,7 +266,7 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
                 nomeSala.append("_");
                 nomeSala.append(slug);
 
-                novaSala.setApelido(UtilMatrixERP.gerarAliasSalaIDCanonicoUsuarioWhatsapp(usuarioContatoPrincipal, slug));
+                novaSala.setApelido(getAliasSalaParaUsuario(usuarioContatoPrincipal));
                 novaSala.setNome(nomeSala.toString());
 
                 novaSala.getUsuarios().add(usuarioContatoPrincipal);
@@ -252,7 +290,7 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
 
             case MATRIX_CHAT_DEBATE_INTERNO_LEAD_CLIENTE:
             case MATRIX_CHAT_ATENDIMENTO:
-                String apelido = UtilMatrixERP.gerarAliasSalaIDCanonicoObjetoRelacionado(pBeanVinculado, slug);
+                String apelido = getAliasSalaParaEnttidade(pBeanVinculado);
 
                 novaSala.setApelido(apelido);
                 novaSala.setNome(pBeanVinculado.getNome());
@@ -270,7 +308,7 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
                 return novaSala;
 
             case MATRIX_CHAT_ATENDIMENTO_CHAMADO:
-                String apelidoChat = UtilMatrixERP.gerarAliasSalaIDCanonicoObjetoRelacionado(pBeanVinculado, slug);
+                String apelidoChat = getAliasSalaParaEnttidade(pBeanVinculado);
                 novaSala.setApelido(apelidoChat);
                 novaSala.setNome(pBeanVinculado.getNome());
                 for (ItfUsuarioChat usratendimento : pUsuariosAtendimento) {
@@ -288,7 +326,7 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
             case WTZAP_ATENDIMENTO_GRUPO_CLIENTE:
                 break;
             case CHAT_DINAMICO_DE_ENTIDADE:
-                String apelidoChatDinamico = UtilMatrixERP.gerarAliasSalaIDCanonicoObjetoRelacionado(pBeanVinculado, slug);
+                String apelidoChatDinamico = getAliasSalaParaEnttidade(pBeanVinculado);
                 novaSala.setApelido(apelidoChatDinamico);
                 novaSala.setNome(pBeanVinculado.getNome());
                 for (ItfUsuarioChat usr : pUsuariosAtendimento) {

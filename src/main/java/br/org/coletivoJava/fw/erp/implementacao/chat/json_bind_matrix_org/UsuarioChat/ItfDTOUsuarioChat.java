@@ -127,4 +127,10 @@ public interface ItfDTOUsuarioChat extends ItfDTOSBJSON, ItfUsuarioChat {
     public default Long getId() {
         return (long) getValorPorReflexao();
     }
+
+    @Override
+    public default String getCodigoCRMUniversal() {
+        return (String) getValorPorReflexao();
+    }
+
 }

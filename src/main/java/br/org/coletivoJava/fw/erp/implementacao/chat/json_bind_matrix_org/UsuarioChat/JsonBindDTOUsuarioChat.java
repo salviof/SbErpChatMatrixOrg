@@ -9,7 +9,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreJson;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 import java.io.IOException;
+import java.util.Optional;
 
 public class JsonBindDTOUsuarioChat
         extends
@@ -56,6 +58,16 @@ public class JsonBindDTOUsuarioChat
 
             }
         }
+        String idExternoRegistrado = null;
+        if (json.containsKey("external_ids")) {
+            JsonArray idsExtrnod = json.getJsonArray("external_ids");
+            Optional<JsonValue> pesquisaIdentificador = idsExtrnod.stream().filter(jo -> jo.asJsonObject().equals("oidc-casanova")).findFirst();
+            if (pesquisaIdentificador.isPresent()) {
+                idExternoRegistrado = pesquisaIdentificador.get().asJsonObject().getString("external_id");
+                adicionarPropriedadeString("codigoCRMUniversal", node, idExternoRegistrado);
+            }
+        }
+
         selarProcesamento(dto);
         return dto;
     }

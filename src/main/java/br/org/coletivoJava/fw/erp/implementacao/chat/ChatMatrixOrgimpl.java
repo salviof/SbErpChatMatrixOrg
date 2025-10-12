@@ -41,8 +41,10 @@ import com.super_bits.modulosSB.SBCore.integracao.libRestClient.WS.conexaoWebSer
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.token.ItfTokenGestao;
 import com.super_bits.modulosSB.SBCore.modulos.erp.ErroJsonInterpredador;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ItfUsuario;
+import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -80,18 +82,25 @@ public class ChatMatrixOrgimpl
     private static SincronizacaoNotificacoes sinc;
     private static String codigoUsuarioAdmin;
 
-    public String gerarSenhaPadrao(ItfUsuarioChat pUsuario) throws ErroRegraDeNEgocioChat {
-        if (!pUsuario.getCodigoUsuario().contains(".ct:")) {
+    @Override
+    public String gerarSenhaPadrao(ItfUsuario pUsuario, String pCodigoUsuario) throws ErroRegraDeNEgocioChat {
+        if (!pCodigoUsuario.contains(".ct:")) {
             throw new ErroRegraDeNEgocioChat("Apenas usuários do tipo contato tem senhas autogerenciadas");
         }
         if (pUsuario.getTelefone() == null) {
             throw new ErroRegraDeNEgocioChat("Usuário sem telefone, senhas autogerenciadas, são apenas para usuários que acessam exclusivamente pelo whasapp");
         }
+
         if (pUsuario.getEmail() != null) {
-            throw new ErroRegraDeNEgocioChat("Usuário possui e-mail, senhas autogerenciadas, são apenas para usuários que acessam exclusivamente pelo whasapp");
+
+            if (pUsuario.getEmail().split("@")[1].endsWith(FabConfigApiMatrixChat.DOMINIO_FEDERADO.getValorParametroSistema())) {
+                throw new ErroRegraDeNEgocioChat("Usuário possui e-mail corporativo, senhas autogerenciadas, são apenas para usuários que acessam exclusivamente pelo whasapp");
+            }
+
         }
+
         StringBuilder senha = new StringBuilder();
-        senha.append(pUsuario.getTelefone());
+        senha.append(UtilSBCoreStringTelefone.gerarCeluarInternacional(pUsuario.getTelefone()));
         senha.append(SBCore.getConfigModulo(FabConfigApiMatrixChat.class).getPropriedade(FabConfigApiMatrixChat.SEGREDO));
         String hashSenha = UtilSBCoreCriptrografia.getHash128HexaMD5AsString(senha.toString());
         return hashSenha;
@@ -289,7 +298,38 @@ public class ChatMatrixOrgimpl
         if (pUsuarioContato == null) {
             return false;
         }
+        if (pUsuarioContato.getCodigoUsuario().equals(getUsuarioAdmin().getCodigoUsuario())) {
+            return false;
+        }
+        if (pUsuarioContato.getEmail() != null && pUsuarioContato.getEmail().contains("@")) {
+
+            if (pUsuarioContato.getEmail().split("@")[1].endsWith(FabConfigApiMatrixChat.DOMINIO_FEDERADO.getValorParametroSistema())) {
+                return false;
+            }
+        }
+
         return isUmUsuarioContato(pUsuarioContato.getCodigoUsuario());
+    }
+
+    @Override
+    public boolean salaTornarMembroAdmin(ItfChatSalaBean pSala, String pCodigoMembro) throws ErroConexaoServicoChat {
+        try {
+            ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatSalas.SALA_PERMICOES_VISUALIZAR.getAcao(pSala.getCodigoChat()).getResposta();
+            JsonObject jsonPowerLevels = resposta.getRespostaComoObjetoJson();
+            // --- editar a chave "users" adicionando um novo usuário ---
+            JsonObjectBuilder usersBuilder = Json.createObjectBuilder(
+                    jsonPowerLevels.getJsonObject("users")
+            );
+            usersBuilder.add(pCodigoMembro, 100);
+
+            // reconstruir o objeto final, copiando os campos antigos e substituindo "users"
+            JsonObjectBuilder finalBuilder = Json.createObjectBuilder(jsonPowerLevels);
+            finalBuilder.add("users", usersBuilder);
+
+            return FabApiRestIntMatrixChatSalas.SALA_PERMICOES_ATUALIZAR.getAcao(pSala.getCodigoChat(), UtilSBCoreJson.getTextoByJsonObjeect(finalBuilder.build())).getResposta().isSucesso();
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     enum TIPO_INDENTIFICACAO_SALA {
@@ -501,7 +541,8 @@ public class ChatMatrixOrgimpl
     }
 
     private ItfUsuarioChat registraUsuarioPorTelefone(ItfUsuarioChat pUsuario) {
-        mapaUsuarioChatByEmail.put(pUsuario.getTelefone(), pUsuario);
+        String telefone = UtilSBCoreStringTelefone.gerarCeluarInternacional(pUsuario.getTelefone());
+        mapaUsuarioChatByEmail.put(telefone, pUsuario);
         mapaUsuarioChatByCodigo.put(pUsuario.getCodigoUsuario(), pUsuario);
         return pUsuario;
     }
@@ -681,12 +722,14 @@ public class ChatMatrixOrgimpl
     @Override
     public boolean usuarioAtualizarSenha(String pCodigoUsuario, String pNovaSenha) throws ErroConexaoServicoChat, ErroRegraDeNEgocioChat {
         validarTokenSistema();
-        if (pCodigoUsuario.contains(".ct:")) {
-            if (!pNovaSenha.equals(gerarSenhaPadrao(getUsuarioByCodigo(pCodigoUsuario)))) {
-                throw new ErroRegraDeNEgocioChat("a senha dos usuários de contato são auto gerenciadas" + ", utilise: servico.gerarSenhaPadrao(usuario) para atualizar a senha");
-            }
 
-        }
+        // Verificação inválida, a ideia éra garantir que o usuário aplique a senha de acordo com o email,
+        // porém uma vez que o telefone tenha sido alterado, o update do telefone ficaria travado  pois para alterar o telefone precisa primeiro altera a senha, caso seja um usuário desativado
+        // if (isUmUsuarioContato(pCodigoUsuario)) {
+        //     if (!pNovaSenha.equals(gerarSenhaPadrao(getUsuarioByCodigo(pCodigoUsuario), pCodigoUsuario))) {
+        //          throw new ErroRegraDeNEgocioChat("a senha dos usuários de contato são auto gerenciadas" + ", utilise: servico.gerarSenhaPadrao(usuario) para atualizar a senha");
+        //     }
+        //   }
         ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatUsuarios.USUARIO_ATUALIZAR_SENHA.getAcao(pCodigoUsuario, pNovaSenha).getResposta();
         if (!resposta.isSucesso()) {
             System.out.println(resposta.getRespostaTexto());
@@ -899,9 +942,7 @@ public class ChatMatrixOrgimpl
             }
 
             GestaoTokenRestIntmatrixchat gestao = (GestaoTokenRestIntmatrixchat) FabApiRestIntMatrixChatSalas.SALA_ENVIAR_MENSAGEM_TEXTO_SIMPLES.getGestaoToken(pUsuario);
-            if (!gestao.isTemTokemAtivo()) {
-                gestao.gerarNovoToken();
-            }
+
             if (!gestao.isTemTokemAtivo()) {
                 throw new ErroConexaoServicoChat("Falha autenticando com o usuário " + pUsuario.getNome());
             }
@@ -1069,7 +1110,7 @@ public class ChatMatrixOrgimpl
     @Override
     public boolean usuarioLogadoObterChaveAcesso(String pUserName, String pSenha) {
         GestaoTokenRestIntmatrixchat gestao = (GestaoTokenRestIntmatrixchat) FabApiRestIntMatrixChatUsuarios.USUARIOS_STATUS.getGestaoToken(SBCore.getUsuarioLogado());
-        if (gestao.isTemTokemAtivo()) {
+        if (gestao.validarToken()) {
             return true;
         }
 
@@ -1090,11 +1131,11 @@ public class ChatMatrixOrgimpl
     }
 
     @Override
-    public boolean validarTokenOuGerarNovo(ItfUsuarioChat pUsuario, String pCodigo, String pSenha) throws ErroRegraDeNEgocioChat, ErroConexaoServicoChat {
+    public boolean validarTokenOuGerarNovo(ItfUsuario pUsuario, String pCodigo, String pSenha) throws ErroRegraDeNEgocioChat, ErroConexaoServicoChat {
         String senha = pSenha;
         String codUsuario = pCodigo;
         if (pUsuario != null) {
-            if (getUsuarioAdmin().getCodigoUsuario().equals(pUsuario.getCodigoUsuario())) {
+            if (getUsuarioAdmin().getCodigoUsuario().equals(pCodigo)) {
                 pUsuario = null;
             }
         }
@@ -1119,11 +1160,13 @@ public class ChatMatrixOrgimpl
             if (pUsuario != null) {
 
                 if (pSenha == null) {
-                    codUsuario = pUsuario.getCodigoUsuario();
+                    //codUsuario = pUsuario.getCodigoUsuario();
                     // codUsuario = codUsuario.substring(1, codUsuario.indexOf(":"));
+                    ItfUsuarioChat usuariochat = getUsuarioByCodigo(pCodigo);
 
-                    if (codUsuario.contains(".ct:")) {
-                        senha = gerarSenhaPadrao(pUsuario);
+                    if (isUmUsuarioContato(usuariochat)) {
+                        senha = gerarSenhaPadrao(pUsuario, codUsuario);
+                        usuarioAtualizarSenha(codUsuario, senha);
                     }
 
                 }
@@ -1167,7 +1210,7 @@ public class ChatMatrixOrgimpl
 
     @Override
     public ItfUsuarioChat usuarioAtualizar(String pCodigo, String pNome, String pEmail, String pTelefone) throws ErroConexaoServicoChat {
-        String telefone = UtilSBCoreStringTelefone.gerarCeluarInternacional(pTelefone.replace("+", ""));
+        String telefone = UtilSBCoreStringTelefone.gerarCeluarInternacional(pTelefone);
         ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatUsuarios.USUARIO_ATUALIZAR.getAcao(
                 pCodigo,
                 pNome,
@@ -1181,6 +1224,7 @@ public class ChatMatrixOrgimpl
             System.out.println("Falha criando usuário ");
             return null;
         } else {
+
             System.out.println("Usuário atualizado com sucesso");
         }
         try {
@@ -1248,7 +1292,7 @@ public class ChatMatrixOrgimpl
     public boolean salaNotificarLeitura(String pCodigoSala, ItfUsuarioChat pUsuario, String pCodigoReciboMatix) {
 
         try {
-            validarTokenOuGerarNovo(pUsuario, pUsuario.getCodigoUsuario(), gerarSenhaPadrao(pUsuario));
+            validarTokenOuGerarNovo(pUsuario, pUsuario.getCodigoUsuario(), gerarSenhaPadrao(pUsuario, pUsuario.getCodigoUsuario()));
         } catch (ErroRegraDeNEgocioChat | ErroConexaoServicoChat ex) {
             return false;
         }
@@ -1273,29 +1317,33 @@ public class ChatMatrixOrgimpl
     }
 
     @Override
-    public String gerarCodigoUsuarioContato(String pNome, String pWhatsappTelefone) throws ErroRegraDeNEgocioChat, ErroConexaoServicoChat {
-        if (pNome == null || pNome.length() < 2) {
-            throw new ErroRegraDeNEgocioChat("O nome não é válido");
-        }
+    public String gerarCodigoUsuarioContato(String pWhatsappTelefone) throws ErroRegraDeNEgocioChat, ErroConexaoServicoChat {
+
         String telefone = UtilSBCoreStringTelefone.gerarCeluarInternacional(pWhatsappTelefone);
         if (telefone == null) {
             throw new ErroRegraDeNEgocioChat("O Telefone não é válido");
         }
-        String codigo = gerarCodigoUsuario(pNome, telefone, "ct");
-        ItfUsuarioChat usr = getUsuarioByCodigo(codigo);
-        if (usr == null) {
-            return codigo;
+
+        ItfUsuarioChat usuarioPorTelefone = getUsuarioByTelefone(telefone);
+        String codigo = gerarCodigoUsuario("contato", telefone, "ct");
+        if (usuarioPorTelefone != null) {
+
+            if (!usuarioPorTelefone.getCodigoUsuario().equals(codigo)) {
+                /// outro usuário está usando este telefone, caso seja um usuário do contato ele precisa ser exluido, e um novo criado
+                if (isUmUsuarioAtendimento(usuarioPorTelefone)) {
+                    throw new ErroRegraDeNEgocioChat("O usuário de atendimento " + usuarioPorTelefone.getNome() + " " + usuarioPorTelefone.getEmail() + " está usando seu telefone, entre em contato, re remova esse numero de telefone do atendimento");
+                } else {
+                    FabApiRestIntMatrixChatUsuarios.USUARIO_REMOVER.getAcao(codigo);
+                }
+            }
+
         }
 
-        usr = getUsuarioByTelefone(pWhatsappTelefone);
-        if (usr == null) {
-            return codigo;
-        }
-        if (isUmUsuarioAtendimento(usr)) {
-            throw new ErroRegraDeNEgocioChat("Um usuário vinculado ao telefone " + pWhatsappTelefone + " foi encontrado, mas o codigo não é do tipo Contato");
-        } else {
-            return usr.getCodigoUsuario();
-        }
+        // usr = getUsuarioByTelefone(pWhatsappTelefone);
+        // if (usr == null) {
+        //      return codigo;
+        //  }
+        return codigo;
 
     }
 
@@ -1307,7 +1355,7 @@ public class ChatMatrixOrgimpl
         if (telefoneInternacional == null) {
             throw new ErroRegraDeNEgocioChat("Telefone inválido" + pTelefoneInternacional);
         }
-        String codigoUsuario = gerarCodigoUsuarioContato(pNome, telefoneInternacional);
+        String codigoUsuario = gerarCodigoUsuarioContato(telefoneInternacional);
         ItfUsuarioChat usuario = getUsuarioByCodigo(codigoUsuario);
 
         if (usuario == null) {
@@ -1321,7 +1369,7 @@ public class ChatMatrixOrgimpl
                 throw new ErroConexaoServicoChat("Falha criando usuário tipo contato");
             }
 
-            usuarioAtualizarSenha(codigoUsuario, gerarSenhaPadrao(usuario));
+            usuarioAtualizarSenha(codigoUsuario, gerarSenhaPadrao(usuario, codigoUsuario));
 
             usuario = novoUsuario;
         } else {
@@ -1386,12 +1434,17 @@ public class ChatMatrixOrgimpl
             throw new ErroRegraDeNEgocioChat("O email não é válido");
         }
         ItfUsuarioChat usr = getUsuarioByEmail(pEmail);
+        String codigoEstadoDaArte = gerarCodigoUsuario(pNome, pEmail, "at");
         if (usr != null) {
-            return usr.getCodigoUsuario();
+            if (isUmUsuarioAtendimento(usr)) {
+                return usr.getCodigoUsuario();
+            } else {
+                return codigoEstadoDaArte;
+            }
+
         } else {
 
-            String codigo = gerarCodigoUsuario(pNome, pEmail, "at");
-            return codigo;
+            return codigoEstadoDaArte;
         }
 
     }

@@ -63,7 +63,7 @@ public class SessaoMatrix extends Thread {
             case CONTATO:
                 GestaoTokenRestIntmatrixchat gestao = (GestaoTokenRestIntmatrixchat) FabApiRestIntMatrixChatUsuarios.USUARIOS_DA_SALA.getGestaoToken(pUsuario);
                 gestao.setLoginNomeUsuario(pUsuario.getEmailPrincipal());
-                gestao.setLoginSenhaUsuario(SERVICO_MATRIX.gerarSenhaPadrao(pUsuario));
+                gestao.setLoginSenhaUsuario(SERVICO_MATRIX.gerarSenhaPadrao(pUsuario, pUsuario.getCodigoUsuario()));
                 return gestao;
 
             case ATENDIMENTO:
@@ -88,7 +88,7 @@ public class SessaoMatrix extends Thread {
         }
 
         tipo = TIPO_MONITOR.CONTATO;
-        gestaoToken = getGestaoToken(pUsuarioContato, SERVICO_MATRIX.gerarSenhaPadrao(pUsuarioContato));
+        gestaoToken = getGestaoToken(pUsuarioContato, SERVICO_MATRIX.gerarSenhaPadrao(pUsuarioContato, pUsuarioContato.getCodigoUsuario()));
         clienteConexao = new ClientMatrix(this);
 
     }

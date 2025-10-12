@@ -6,21 +6,32 @@ package br.org.coletivoJava.fw.erp.implementacao.chat;
 
 import br.org.coletivoJava.fw.api.erp.chat.ERPChat;
 import br.org.coletivoJava.fw.api.erp.chat.ErroConexaoServicoChat;
+import br.org.coletivoJava.fw.api.erp.chat.ErroRegraDeNEgocioChat;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComandoDeAtendimento;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
+import br.org.coletivoJava.fw.api.erp.chat.model.ItfListenerEventoComandoAtendimento;
+import br.org.coletivoJava.fw.api.erp.chat.model.ItfListenerEventoMatrix;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfNotificacaoUsuarioChat;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfUsuarioChat;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.FabTipoSalaMatrix;
+import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.SalaChatSessaoEscutaAtiva;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.UsuarioChatMatrixOrg;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.arquivosConfiguracao.ConfigModulo;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.InfoCampos.ItensGenericos.basico.UsuarioAnonimo;
-import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.ItemSimples;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ItfUsuario;
+import jakarta.json.JsonArray;
+import java.io.InputStream;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.coletivojava.fw.api.tratamentoErros.ErroPreparandoObjeto;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import testesFW.ConfigCoreJunitPadraoDevAcaoPermissao;
+import testesFW.ConfigCoreJunitPadraoDevLib;
 import testesFW.TesteJunit;
 
 /**
@@ -36,9 +47,6 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
     private static final String usuarioTelefonr = "31989999999";
     private static final String salaTesteNome = "salaTeste";
     private static String salaTesteID = "";
-
-    public ChatMatrixOrgimplTest() {
-    }
 
     /**
      * Test of getSalaByCodigo method, of class ChatMatrixOrgimpl.
@@ -78,7 +86,7 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
 
     @Override
     protected void configAmbienteDesevolvimento() {
-        SBCore.configurar(new ConfigCoreJunitPadraoDevAcaoPermissao(), SBCore.ESTADO_APP.DESENVOLVIMENTO);
+        SBCore.configurar(new ConfigCoreJunitPadraoDevLib(), SBCore.ESTADO_APP.DESENVOLVIMENTO);
     }
 
     public boolean testarObterUsuario() throws ErroConexaoServicoChat {
@@ -245,9 +253,16 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
         // TODO review the generated test code and remove the default call to fail.
     }
 
-    @Test
     public void testeGeraacaoAliasCanonico() {
         ChatMatrixOrgimpl instance = new ChatMatrixOrgimpl();
+
+        ItfUsuarioChat usuario;
+        try {
+            usuario = instance.getUsuarioByTelefone("5531986831481");
+            System.out.println(usuario.getTelefone());
+        } catch (ErroConexaoServicoChat ex) {
+            Logger.getLogger(ChatMatrixOrgimplTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         String retorno1 = instance.gerarAliasIdentificadorCanonico("Salvio furbino");
         System.out.println(retorno1);
@@ -258,5 +273,18 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
 
         String retorno3 = instance.gerarAliasIdentificadorCanonico((item.getClassePontoIdentificador().replace(".", "_")).toLowerCase() + "_" + "at");
         System.out.println(retorno3);
+    }
+
+    @Test
+    public void teste() {
+        ChatMatrixOrgimpl chatMatrixService = new ChatMatrixOrgimpl();
+        String codigoContato;
+        try {
+            codigoContato = chatMatrixService.gerarCodigoUsuarioContato("31984178110");
+            System.out.println(codigoContato);
+        } catch (ErroRegraDeNEgocioChat | ErroConexaoServicoChat ex) {
+            Logger.getLogger(ChatMatrixOrgimplTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 }

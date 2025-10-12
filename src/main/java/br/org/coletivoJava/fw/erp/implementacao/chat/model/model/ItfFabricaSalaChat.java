@@ -16,9 +16,9 @@ import org.coletivojava.fw.api.tratamentoErros.ErroPreparandoObjeto;
  */
 public interface ItfFabricaSalaChat {
 
-    public String getAliasSala(ItfUsuarioChat pUSuarioLead);
+    public String getAliasSalaParaUsuario(ItfUsuarioChat pUSuarioLead);
 
-    public String getAliasSala(ItfBeanSimplesSomenteLeitura pBeanVinculado);
+    public String getAliasSalaParaEnttidade(ItfBeanSimplesSomenteLeitura pBeanVinculado);
 
     public String getApelidoNomeUnicoSpace();
 
