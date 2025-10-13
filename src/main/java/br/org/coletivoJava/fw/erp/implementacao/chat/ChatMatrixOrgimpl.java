@@ -923,7 +923,7 @@ public class ChatMatrixOrgimpl
 
         boolean temTokenvalido;
         try {
-            temTokenvalido = validarTokenOuGerarNovo(pUsuario, null, null);
+            temTokenvalido = validarTokenOuGerarNovo(pUsuario, pUsuario.getCodigoUsuario(), null);
         } catch (ErroRegraDeNEgocioChat ex) {
             temTokenvalido = false;
         }
@@ -1134,6 +1134,10 @@ public class ChatMatrixOrgimpl
     public boolean validarTokenOuGerarNovo(ItfUsuario pUsuario, String pCodigo, String pSenha) throws ErroRegraDeNEgocioChat, ErroConexaoServicoChat {
         String senha = pSenha;
         String codUsuario = pCodigo;
+        if (pCodigo == null && pUsuario != null && pUsuario instanceof ItfUsuarioChat) {
+            codUsuario = ((ItfUsuarioChat) pUsuario).getCodigoUsuario();
+        }
+
         if (pUsuario != null) {
             if (getUsuarioAdmin().getCodigoUsuario().equals(pCodigo)) {
                 pUsuario = null;

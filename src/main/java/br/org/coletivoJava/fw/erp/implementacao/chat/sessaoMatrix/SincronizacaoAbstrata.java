@@ -109,6 +109,7 @@ public abstract class SincronizacaoAbstrata {
     private List<String> salaNaoMonitorada = new ArrayList<>();
 
     private void runEventListener(String filterID) {
+
         if (eventListenerThread == null) {
             eventListenerThread = new Thread(() -> {
                 String baseurl = HttpHelper.URLs.sync + "?access_token=" + sessao.getClienteConexao().getLoginData().getAccess_token() + "&filter=" + filterID + "&timeout=" + LONG_POLLING_TIMEOUT;
@@ -131,6 +132,7 @@ public abstract class SincronizacaoAbstrata {
                     nextURL = baseurl;
                 }
                 boolean pausarProcessamento = false;
+                boolean primeiroPricessamento = true;
                 while (true) {
 
                     try {
@@ -151,6 +153,7 @@ public abstract class SincronizacaoAbstrata {
                     pausarProcessamento = false;
                     try {
                         data = httpHelper.sendRequest(sessao.getClienteConexao().getHost(), nextURL, null, false, "GET");
+
                     } catch (IOException e) {
                         e.printStackTrace();
                         continue;
@@ -158,6 +161,14 @@ public abstract class SincronizacaoAbstrata {
 
                     if (data != null && data.length() > 0) {
                         JsonObject dadosJson = UtilSBCoreJson.getJsonObjectByTexto(data);
+                        if (primeiroPricessamento && SBCore.isEmModoDesenvolvimento()) {
+                            //Quando em desenvolvimento, não lê os enventos antigos
+                            String nexBatchPrimeiraLeitura = dadosJson.getString("next_batch");
+                            SBCore.getConfigModulo(FabConfigApiMatrixChat.class).getRepositorioDeArquivosExternos().putConteudoRecursoExterno(NOME_REPOSITORIO_NEXT_BATCH, nexBatchPrimeiraLeitura);
+                            primeiroPricessamento = false;
+                            continue;
+                        }
+
                         //{
                         // "errcode": "M_UNKNOWN_TOKEN",
                         // "error": "Unrecognized access token."
