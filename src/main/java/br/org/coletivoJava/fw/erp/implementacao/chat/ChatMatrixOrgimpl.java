@@ -923,7 +923,11 @@ public class ChatMatrixOrgimpl
 
         boolean temTokenvalido;
         try {
-            temTokenvalido = validarTokenOuGerarNovo(pUsuario, pUsuario.getCodigoUsuario(), null);
+            if (pUsuario == null) {
+                temTokenvalido = validarTokenSistema();
+            } else {
+                temTokenvalido = validarTokenOuGerarNovo(pUsuario, pUsuario.getCodigoUsuario(), null);
+            }
         } catch (ErroRegraDeNEgocioChat ex) {
             temTokenvalido = false;
         }
