@@ -1,11 +1,12 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat.model.model;
 
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfUsuarioChat;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.InfoCampos.anotacoes.InfoCampo;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.InfoCampos.campo.FabTipoAtributoObjeto;
-import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ItfGrupoUsuario;
-import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.cep.ItfLocal;
-import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.cep.ItfLocalPostagem;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ComoGrupoUsuario;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.cep.ComoLocal;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.cep.ComoLocalPostagem;
+
 import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.ItemNormal;
 import java.util.Date;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  *
  * @author salvio
  */
-public class UsuarioChatMatrixOrg extends ItemNormal implements ItfUsuarioChat {
+public class UsuarioChatMatrixOrg extends ItemNormal implements ComoUsuarioChat {
 
     @InfoCampo(tipo = FabTipoAtributoObjeto.ID)
     private Long id;
@@ -110,17 +111,17 @@ public class UsuarioChatMatrixOrg extends ItemNormal implements ItfUsuarioChat {
     }
 
     @Override
-    public ItfGrupoUsuario getGrupo() {
+    public ComoGrupoUsuario getGrupo() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
     @Override
-    public void setGrupo(ItfGrupoUsuario grupo) {
+    public void setGrupo(ComoGrupoUsuario grupo) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
     @Override
-    public List<ItfGrupoUsuario> getGruposAdicionais() {
+    public List<ComoGrupoUsuario> getGruposAdicionais() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
@@ -135,7 +136,7 @@ public class UsuarioChatMatrixOrg extends ItemNormal implements ItfUsuarioChat {
     }
 
     @Override
-    public ItfLocalPostagem getLocalizacao() {
+    public ComoLocalPostagem getLocalizacao() {
         return null;
     }
 
@@ -145,7 +146,7 @@ public class UsuarioChatMatrixOrg extends ItemNormal implements ItfUsuarioChat {
     }
 
     @Override
-    public void setLocalizacao(ItfLocal pLocal) {
+    public void setLocalizacao(ComoLocal pLocal) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 

@@ -1,7 +1,7 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ChatSalaBean;
 
 import br.org.coletivoJava.fw.api.erp.chat.ERPChat;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfUsuarioChat;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import br.org.coletivoJava.fw.erp.implementacao.chat.UtilMatrixERP;
 import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.UsuarioChat.DTOUsuarioChat;
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.erp.dto.DTO_SB_JSON_PROCESSADOR_GENERICO;
@@ -49,13 +49,13 @@ public class JsonBindDTOChatSalaBean
         String roomId = node.get("room_id").asText();
         String nome = node.get("name").asText();
         ItfRespostaWebServiceSimples respUsuaarioSalaRest = FabApiRestIntMatrixChatUsuarios.USUARIOS_DA_SALA.getAcao(roomId).getResposta();
-        List<ItfUsuarioChat> usuarios = new ArrayList<>();
+        List<ComoUsuarioChat> usuarios = new ArrayList<>();
 
         respUsuaarioSalaRest.getRespostaComoObjetoJson().getJsonArray("members").stream().forEach(us -> {
             try {
                 JsonString codigoUsuario = (JsonString) us;
                 ItfRespostaWebServiceSimples respDadpsUsuario = FabApiRestIntMatrixChatUsuarios.USUARIO_OBTER_DADOS.getAcao(codigoUsuario.getString()).getResposta();
-                DTOUsuarioChat usuario = (DTOUsuarioChat) ERPChat.MATRIX_ORG.getDTO(UtilSBCoreJson.getTextoByJsonObjeect(respDadpsUsuario.getRespostaComoObjetoJson()), ItfUsuarioChat.class);
+                DTOUsuarioChat usuario = (DTOUsuarioChat) ERPChat.MATRIX_ORG.getDTO(UtilSBCoreJson.getTextoByJsonObjeect(respDadpsUsuario.getRespostaComoObjetoJson()), ComoUsuarioChat.class);
                 usuarios.add(usuario);
             } catch (ErroJsonInterpredador ex) {
                 SBCore.RelatarErro(FabErro.SOLICITAR_REPARO, "Falha processando json de usuaŕio", ex);
@@ -63,7 +63,7 @@ public class JsonBindDTOChatSalaBean
         });
         adicionarListas("usuarios", usuarios);
 
-        //adicionarPropriedadeListaObjetos(ItfUsuarioChat.class, "", node, "usaurios")
+        //adicionarPropriedadeListaObjetos(ComoUsuarioChat.class, "", node, "usaurios")
         selarProcesamento(dto);
         return dto;
     }

@@ -1,8 +1,8 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.UsuarioChat;
 
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.erp.dto.DTO_SBGENERICO;
-import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ItfGrupoUsuario;
-import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.cep.ItfLocal;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ComoGrupoUsuario;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.cep.ComoLocal;
 
 public class DTOUsuarioChat extends DTO_SBGENERICO<ItfDTOUsuarioChat>
         implements
@@ -17,7 +17,7 @@ public class DTOUsuarioChat extends DTO_SBGENERICO<ItfDTOUsuarioChat>
     }
 
     @Override
-    public void setGrupo(ItfGrupoUsuario grupo) {
+    public void setGrupo(ComoGrupoUsuario grupo) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
@@ -27,7 +27,7 @@ public class DTOUsuarioChat extends DTO_SBGENERICO<ItfDTOUsuarioChat>
     }
 
     @Override
-    public void setLocalizacao(ItfLocal pLocal) {
+    public void setLocalizacao(ComoLocal pLocal) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 

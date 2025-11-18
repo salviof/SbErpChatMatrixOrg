@@ -6,8 +6,8 @@ package br.org.coletivoJava.fw.erp.implementacao.chat.model.model;
 
 import br.org.coletivoJava.fw.api.erp.chat.ERPChat;
 import br.org.coletivoJava.fw.api.erp.chat.ErroConexaoServicoChat;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfUsuarioChat;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import br.org.coletivoJava.fw.erp.implementacao.chat.ChatMatrixOrgimpl;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
 import java.util.logging.Level;
@@ -49,12 +49,12 @@ public class FabTipoSalaMatrixTest {
     public void testGetApelidoNomeUnicoSpace() {
         SBCore.configurar(new ConfigCoreJunitPadraoDevAcaoPermissao(), SBCore.ESTADO_APP.DESENVOLVIMENTO);
         try {
-            ItfUsuarioChat salvio = erpChatService.getUsuarioByEmail("salvio@casanovadigital.com.br");
-            ItfUsuarioChat camila = erpChatService.getUsuarioByEmail("camila@casanovadigital.com.br");
+            ComoUsuarioChat salvio = erpChatService.getUsuarioByEmail("salvio@casanovadigital.com.br");
+            ComoUsuarioChat camila = erpChatService.getUsuarioByEmail("camila@casanovadigital.com.br");
 
             for (FabTipoSalaMatrix tipoSala : FabTipoSalaMatrix.values()) {
 
-                ItfChatSalaBean sala = erpChatService.espacoCriar(tipoSala.getNomeSpaceDysplay(), tipoSala.getApelidoNomeUnicoSpace());
+                ComoChatSalaBean sala = erpChatService.espacoCriar(tipoSala.getNomeSpaceDysplay(), tipoSala.getApelidoNomeUnicoSpace());
                 erpChatService.salaAdicionarMembro(sala, salvio.getCodigoUsuario());
                 erpChatService.salaAdicionarMembro(sala, camila.getCodigoUsuario());
 

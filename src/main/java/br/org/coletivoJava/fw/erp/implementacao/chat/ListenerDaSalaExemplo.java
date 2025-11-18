@@ -4,7 +4,7 @@
  */
 package br.org.coletivoJava.fw.erp.implementacao.chat;
 
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfEventoMatix;
 import br.org.coletivoJava.fw.erp.implementacao.chat.sessaoMatrix.listeners.EscutaSalaMatrixAbst;
 
@@ -14,13 +14,13 @@ import br.org.coletivoJava.fw.erp.implementacao.chat.sessaoMatrix.listeners.Escu
  */
 public class ListenerDaSalaExemplo extends EscutaSalaMatrixAbst {
 
-    public ListenerDaSalaExemplo(ItfChatSalaBean pSala) {
+    public ListenerDaSalaExemplo(ComoChatSalaBean pSala) {
         super(pSala);
 
     }
 
     @Override
-    public ItfChatSalaBean atualizarDtoSala() {
+    public ComoChatSalaBean atualizarDtoSala() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 

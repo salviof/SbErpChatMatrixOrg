@@ -4,8 +4,8 @@
  */
 package br.org.coletivoJava.fw.erp.implementacao.chat.model.model;
 
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfUsuarioChat;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.InfoCampos.anotacoes.InfoObjetoSB;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.ItemSimples;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
  * @author salvio
  */
 @InfoObjetoSB(plural = "Salas MAtrix", tags = "Sala MAtrix")
-public class SalaMatrxOrg extends ItemSimples implements ItfChatSalaBean {
+public class SalaMatrxOrg extends ItemSimples implements ComoChatSalaBean {
 
     private String codigoChat;
     private String apelido;
@@ -26,11 +26,11 @@ public class SalaMatrxOrg extends ItemSimples implements ItfChatSalaBean {
     private boolean existe;
     private FabTipoSalaMatrix tipoSala;
 
-    private ItfUsuarioChat usuarioDono;
+    private ComoUsuarioChat usuarioDono;
 
-    private List<ItfUsuarioChat> usuarios;
-    private List<ItfUsuarioChat> usuariosDaEmpresa;
-    private List<ItfUsuarioChat> usuariosExternos;
+    private List<ComoUsuarioChat> usuarios;
+    private List<ComoUsuarioChat> usuariosDaEmpresa;
+    private List<ComoUsuarioChat> usuariosExternos;
 
     @Override
     public String getUrlSala() {
@@ -73,11 +73,11 @@ public class SalaMatrxOrg extends ItemSimples implements ItfChatSalaBean {
     }
 
     @Override
-    public List<ItfUsuarioChat> getUsuarios() {
+    public List<ComoUsuarioChat> getUsuarios() {
         return usuarios;
     }
 
-    public void setUsuarios(List<ItfUsuarioChat> usuarios) {
+    public void setUsuarios(List<ComoUsuarioChat> usuarios) {
         this.usuarios = usuarios;
     }
 
@@ -98,27 +98,27 @@ public class SalaMatrxOrg extends ItemSimples implements ItfChatSalaBean {
         this.tipoSala = tipoSala;
     }
 
-    public ItfUsuarioChat getUsuarioDono() {
+    public ComoUsuarioChat getUsuarioDono() {
         return usuarioDono;
     }
 
-    public void setUsuarioDono(ItfUsuarioChat usuarioDono) {
+    public void setUsuarioDono(ComoUsuarioChat usuarioDono) {
         this.usuarioDono = usuarioDono;
     }
 
-    public List<ItfUsuarioChat> getUsuariosDaEmpresa() {
+    public List<ComoUsuarioChat> getUsuariosDaEmpresa() {
         return usuariosDaEmpresa;
     }
 
-    public void setUsuariosDaEmpresa(List<ItfUsuarioChat> usuariosDaEmpresa) {
+    public void setUsuariosDaEmpresa(List<ComoUsuarioChat> usuariosDaEmpresa) {
         this.usuariosDaEmpresa = usuariosDaEmpresa;
     }
 
-    public List<ItfUsuarioChat> getUsuariosExternos() {
+    public List<ComoUsuarioChat> getUsuariosExternos() {
         return usuariosExternos;
     }
 
-    public void setUsuariosExternos(List<ItfUsuarioChat> usuariosExternos) {
+    public void setUsuariosExternos(List<ComoUsuarioChat> usuariosExternos) {
         this.usuariosExternos = usuariosExternos;
     }
 

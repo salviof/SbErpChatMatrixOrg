@@ -6,7 +6,7 @@ package br.org.coletivoJava.fw.erp.implementacao.chat.sessaoMatrix;
 
 import br.org.coletivoJava.fw.api.erp.chat.ERPChat;
 import br.org.coletivoJava.fw.api.erp.chat.ErroConexaoServicoChat;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
 import br.org.coletivoJava.fw.erp.implementacao.chat.ChatMatrixOrgimpl;
 import br.org.coletivoJava.fw.erp.implementacao.chat.ListenerDaSalaExemplo;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.SalaChatSessaoEscutaAtiva;
@@ -37,7 +37,7 @@ public class MonitorConexaoMatrixTest {
         File file = new File(Files.sync_next_batch);
         System.out.println("Arquivo será salvo em: " + file.getAbsolutePath());
         ChatMatrixOrgimpl chat = (ChatMatrixOrgimpl) ERPChat.MATRIX_ORG.getImplementacaoDoContexto();
-        ItfChatSalaBean sala;
+        ComoChatSalaBean sala;
         try {
             sala = chat.getSalaByNome("Casanova digital");
             SalaChatSessaoEscutaAtiva salaEscuta = new SalaChatSessaoEscutaAtiva(sala, new ListenerDaSalaExemplo(sala));

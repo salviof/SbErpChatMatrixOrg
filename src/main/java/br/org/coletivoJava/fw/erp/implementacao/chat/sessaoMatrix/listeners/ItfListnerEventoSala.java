@@ -5,7 +5,7 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat.sessaoMatrix.listeners;
 
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfListenerEventoMatrix;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
 
 /**
  *
@@ -13,6 +13,6 @@ import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
  */
 public interface ItfListnerEventoSala extends ItfListenerEventoMatrix {
 
-    public ItfChatSalaBean getSala();
+    public ComoChatSalaBean getSala();
 
 }

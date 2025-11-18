@@ -1,14 +1,14 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ChatSalaBean;
 
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.erp.dto.ItfDTOSBJSON;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ChatSalaBean.JsonBindDTOChatSalaBean;
 import java.lang.String;
 import java.util.List;
 
 @JsonDeserialize(using = JsonBindDTOChatSalaBean.class)
-public interface ItfDTOChatSalaBean extends ItfDTOSBJSON, ItfChatSalaBean {
+public interface ItfDTOChatSalaBean extends ItfDTOSBJSON, ComoChatSalaBean {
 
     @Override
     public default String getApelido() {

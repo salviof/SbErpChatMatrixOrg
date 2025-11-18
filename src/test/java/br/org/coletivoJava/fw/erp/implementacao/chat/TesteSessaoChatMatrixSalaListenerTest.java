@@ -6,8 +6,8 @@ package br.org.coletivoJava.fw.erp.implementacao.chat;
 
 import br.org.coletivoJava.fw.api.erp.chat.ERPChat;
 import br.org.coletivoJava.fw.api.erp.chat.ErroConexaoServicoChat;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfUsuarioChat;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.FabTipoSalaMatrix;
 import br.org.coletivoJava.integracoes.matrixChat.config.FabConfigApiMatrixChat;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
@@ -29,10 +29,10 @@ public class TesteSessaoChatMatrixSalaListenerTest {
     private ConfigModulo configuracao;
     private String nomeSala = "salaTestes";
 
-    public ItfChatSalaBean getSalaRegistradaVendas() throws ErroConexaoServicoChat, ErroPreparandoObjeto {
-        ItfUsuarioChat usuarioChat1 = erpChatService.getUsuarioByEmail("salvio@casanovadigital.com.br");
-        ItfUsuarioChat usuarioChat2 = erpChatService.getUsuarioByEmail("renata.mota@casanovadigital.com.br");
-        ItfChatSalaBean salaRegistrada = FabTipoSalaMatrix.WTZAP_VENDAS.getSalaMatrixPadrao(usuarioChat1, usuarioChat2);
+    public ComoChatSalaBean getSalaRegistradaVendas() throws ErroConexaoServicoChat, ErroPreparandoObjeto {
+        ComoUsuarioChat usuarioChat1 = erpChatService.getUsuarioByEmail("salvio@casanovadigital.com.br");
+        ComoUsuarioChat usuarioChat2 = erpChatService.getUsuarioByEmail("renata.mota@casanovadigital.com.br");
+        ComoChatSalaBean salaRegistrada = FabTipoSalaMatrix.WTZAP_VENDAS.getSalaMatrixPadrao(usuarioChat1, usuarioChat2);
         salaRegistrada = erpChatService.getSalaByNome(salaRegistrada.getApelido());
         if (salaRegistrada == null) {
             salaRegistrada = FabTipoSalaMatrix.WTZAP_VENDAS.getSalaMatrixPadrao(usuarioChat1, usuarioChat2);
@@ -41,8 +41,8 @@ public class TesteSessaoChatMatrixSalaListenerTest {
         return salaRegistrada;
     }
 
-    public ItfChatSalaBean getSalaRegistradadaByNome(String id) {
-        ItfChatSalaBean salaRegistrada;
+    public ComoChatSalaBean getSalaRegistradadaByNome(String id) {
+        ComoChatSalaBean salaRegistrada;
         try {
             salaRegistrada = erpChatService.getSalaByNome(nomeSala);
             return salaRegistrada;
@@ -66,8 +66,8 @@ public class TesteSessaoChatMatrixSalaListenerTest {
             //  System.out.println(salaRegistrada.getNome());
             //  System.out.println(salaRegistrada.getApelido());
 
-            ItfChatSalaBean salaRegistrada = getSalaRegistradadaByNome(nomeSala);
-            for (ItfUsuarioChat usr : salaRegistrada.getUsuarios()) {
+            ComoChatSalaBean salaRegistrada = getSalaRegistradadaByNome(nomeSala);
+            for (ComoUsuarioChat usr : salaRegistrada.getUsuarios()) {
                 System.out.println(usr.getCodigoUsuario());
             }
             //erpChatService.salaAdicionarMembro(salaRegistrada, usuarioChat1.getCodigoUsuario());

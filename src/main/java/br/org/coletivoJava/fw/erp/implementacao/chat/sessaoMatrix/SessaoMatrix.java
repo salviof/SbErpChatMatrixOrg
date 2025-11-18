@@ -1,7 +1,7 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat.sessaoMatrix;
 
 import br.org.coletivoJava.fw.api.erp.chat.ErroRegraDeNEgocioChat;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfUsuarioChat;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import br.org.coletivoJava.fw.erp.implementacao.chat.ChatMatrixOrgimpl;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.RespostaLogout;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.SalaChatSessaoEscutaAtiva;
@@ -54,7 +54,7 @@ public class SessaoMatrix extends Thread {
         clienteConexao = new ClientMatrix(this);
     }
 
-    public ItfTokenGestao getGestaoToken(ItfUsuarioChat pUsuario, String senha) throws ErroRegraDeNEgocioChat {
+    public ItfTokenGestao getGestaoToken(ComoUsuarioChat pUsuario, String senha) throws ErroRegraDeNEgocioChat {
         switch (tipo) {
 
             case ADMIN:
@@ -77,7 +77,7 @@ public class SessaoMatrix extends Thread {
         }
     }
 
-    public SessaoMatrix(ChatMatrixOrgimpl pServicoMatrix, ItfUsuarioChat pUsuarioContato) throws ErroRegraDeNEgocioChat {
+    public SessaoMatrix(ChatMatrixOrgimpl pServicoMatrix, ComoUsuarioChat pUsuarioContato) throws ErroRegraDeNEgocioChat {
         SERVICO_MATRIX = pServicoMatrix;
         if (!SERVICO_MATRIX.isUmUsuarioContato(pUsuarioContato.getCodigoUsuario())) {
             throw new ErroRegraDeNEgocioChat("Para monitorar um umsuario de contato envie um usuario contato no parametro");
@@ -93,7 +93,7 @@ public class SessaoMatrix extends Thread {
 
     }
 
-    public SessaoMatrix(ChatMatrixOrgimpl pServicoMatrix, ItfUsuarioChat pUsuarioAtividade, String pSenha) throws ErroRegraDeNEgocioChat {
+    public SessaoMatrix(ChatMatrixOrgimpl pServicoMatrix, ComoUsuarioChat pUsuarioAtividade, String pSenha) throws ErroRegraDeNEgocioChat {
         SERVICO_MATRIX = pServicoMatrix;
         if (!SERVICO_MATRIX.isUmUsuarioAtendimento(pUsuarioAtividade)) {
             throw new ErroRegraDeNEgocioChat("Para monitorar um umsuario de contato envie um usuario contato no parametro");

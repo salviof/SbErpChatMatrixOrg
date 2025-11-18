@@ -4,7 +4,7 @@
  */
 package br.org.coletivoJava.fw.erp.implementacao.chat;
 
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
 import br.org.coletivoJava.fw.erp.implementacao.chat.sessaoMatrix.listeners.EscutaSalaMatrixAbst;
 import br.org.coletivoJava.fw.api.erp.chat.model.FabTipoPacoteDeAcaoMatrix;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfEventoMatix;
@@ -16,7 +16,7 @@ import de.jojii.matrixclientserver.Bot.Events.RoomEvent;
  */
 public class SalaListenerTeste extends EscutaSalaMatrixAbst {
 
-    public SalaListenerTeste(ItfChatSalaBean pSala) {
+    public SalaListenerTeste(ComoChatSalaBean pSala) {
         super(pSala);
     }
 
@@ -79,7 +79,7 @@ public class SalaListenerTeste extends EscutaSalaMatrixAbst {
     }
 
     @Override
-    public ItfChatSalaBean atualizarDtoSala() {
+    public ComoChatSalaBean atualizarDtoSala() {
         System.out.println("Atualização de membros da sala requisitado");
         return null;
     }

@@ -8,18 +8,18 @@ import br.org.coletivoJava.fw.api.erp.chat.ERPChat;
 import br.org.coletivoJava.fw.api.erp.chat.ErroConexaoServicoChat;
 import br.org.coletivoJava.fw.api.erp.chat.ErroRegraDeNEgocioChat;
 import br.org.coletivoJava.fw.api.erp.chat.model.ComandoDeAtendimento;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfListenerEventoComandoAtendimento;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfListenerEventoMatrix;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfNotificacaoUsuarioChat;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfUsuarioChat;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.FabTipoSalaMatrix;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.SalaChatSessaoEscutaAtiva;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.UsuarioChatMatrixOrg;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.arquivosConfiguracao.ConfigModulo;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.InfoCampos.ItensGenericos.basico.UsuarioAnonimo;
-import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ItfUsuario;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ComoUsuario;
 import jakarta.json.JsonArray;
 import java.io.InputStream;
 import java.util.List;
@@ -65,12 +65,12 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
 
             testarCriarSala();
 
-            ItfChatSalaBean salaChat = erpChatService.getSalaByCodigo("!dehxkVYYxJDsNAORfM:casanovadigital.com.br");
+            ComoChatSalaBean salaChat = erpChatService.getSalaByCodigo("!dehxkVYYxJDsNAORfM:casanovadigital.com.br");
             assertEquals("O id não é o id esperado", salaChat.getId(), Long.valueOf("!dehxkVYYxJDsNAORfM:casanovadigital.com.br".hashCode()));
             System.out.println(salaChat.getNome());
             System.out.println(salaChat.getUsuarios());
 
-            for (ItfUsuarioChat usuario : salaChat.getUsuarios()) {
+            for (ComoUsuarioChat usuario : salaChat.getUsuarios()) {
                 System.out.println(usuario.getNome());
                 System.out.println(usuario.getCodigoUsuario());
             }
@@ -90,7 +90,7 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
     }
 
     public boolean testarObterUsuario() throws ErroConexaoServicoChat {
-        ItfUsuarioChat usuario = erpChatService.getUsuarioByEmail("renata.mota@casanovadigital.com.br");
+        ComoUsuarioChat usuario = erpChatService.getUsuarioByEmail("renata.mota@casanovadigital.com.br");
 
         if (usuario == null) {
             return false;
@@ -109,7 +109,7 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
     }
 
     public boolean testarObterDadosSala() {
-//        ItfUsuarioChat usuario = erpChatService.getUsuarioByEmail("renata.mota@casanovadigital.com.br");
+//        ComoUsuarioChat usuario = erpChatService.getUsuarioByEmail("renata.mota@casanovadigital.com.br");
         return true;
     }
 
@@ -124,11 +124,11 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
         UsuarioChatMatrixOrg patricia = UtilMatrixERP.gerarUsuarioUnicoByEmail("Patrícia Paiva", "patricia@casanovadigital.com.br", "31991105847");
         UsuarioChatMatrixOrg renata = UtilMatrixERP.gerarUsuarioUnicoByEmail("Renata Mota", "renata.mota@casanovadigital.com.br", "31998535825");
         try {
-            ItfUsuarioChat usuarioSAlvio = erpChatService.usuarioCriar(salvio, "semSenha");
-            ItfUsuarioChat usuarioCamila = erpChatService.usuarioCriar(camila, "comunicacaoPIX");
-            ItfUsuarioChat usuarioBeatriz = erpChatService.usuarioCriar(beatriz, "casaLover@Bia");
-            ItfUsuarioChat usuarioPatricia = erpChatService.usuarioCriar(patricia, "pattyPaiva@casaLover");
-            ItfUsuarioChat usuarioREnata = erpChatService.usuarioCriar(renata, "Renata@CasaLover");
+            ComoUsuarioChat usuarioSAlvio = erpChatService.usuarioCriar(salvio, "semSenha");
+            ComoUsuarioChat usuarioCamila = erpChatService.usuarioCriar(camila, "comunicacaoPIX");
+            ComoUsuarioChat usuarioBeatriz = erpChatService.usuarioCriar(beatriz, "casaLover@Bia");
+            ComoUsuarioChat usuarioPatricia = erpChatService.usuarioCriar(patricia, "pattyPaiva@casaLover");
+            ComoUsuarioChat usuarioREnata = erpChatService.usuarioCriar(renata, "Renata@CasaLover");
         } catch (ErroConexaoServicoChat ex) {
             Logger.getLogger(ChatMatrixOrgimplTest.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -139,7 +139,7 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
         UsuarioChatMatrixOrg usuarioTeste = UtilMatrixERP.gerarUsuarioUnicoByEmail("Salvio Furbino", "salvio@casanovadigital.com.br", "31984178550");
 
         try {
-            ItfUsuarioChat usuario = erpChatService.usuarioCriar(usuarioTeste, "semSenha");
+            ComoUsuarioChat usuario = erpChatService.usuarioCriar(usuarioTeste, "semSenha");
             if (usuario != null) {
                 System.out.println(usuario.getEmailPrincipal());
                 System.out.println(usuario.getEmail());
@@ -151,7 +151,7 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
         } catch (ErroConexaoServicoChat ex) {
             throw new Throwable("Erro criando usuário" + ex.getMessage());
         }
-        ItfUsuarioChat usuarioPesquisa = erpChatService.getUsuarioByEmail("salvio@casanovadigital.com.br");
+        ComoUsuarioChat usuarioPesquisa = erpChatService.getUsuarioByEmail("salvio@casanovadigital.com.br");
         assertNotNull("O usuário não foi encontrado", usuarioPesquisa);
 
         System.out.println(usuarioPesquisa.getEmailPrincipal());
@@ -163,13 +163,13 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
     }
 
     public void testarCriarSala() {
-        ItfUsuarioChat usuarioComprador = UtilMatrixERP.gerarUsuarioUnicoByEmail("Salvio Furbino Contratação", "salviof@hotmail.com", "31984178550");
+        ComoUsuarioChat usuarioComprador = UtilMatrixERP.gerarUsuarioUnicoByEmail("Salvio Furbino Contratação", "salviof@hotmail.com", "31984178550");
 
         try {
             usuarioComprador = erpChatService.usuarioCriar(usuarioComprador);
-            ItfUsuarioChat usuarioRepresentante = UtilMatrixERP.gerarUsuarioUnicoByEmail("Salvio Furbino Vendas", "salvio@casanovadigital.com.br", "31984178550");
+            ComoUsuarioChat usuarioRepresentante = UtilMatrixERP.gerarUsuarioUnicoByEmail("Salvio Furbino Vendas", "salvio@casanovadigital.com.br", "31984178550");
             usuarioRepresentante = erpChatService.usuarioCriar(usuarioRepresentante);
-            ItfChatSalaBean novaSala;
+            ComoChatSalaBean novaSala;
             try {
                 novaSala = UtilMatrixERP.gerarSala(FabTipoSalaMatrix.WTZAP_VENDAS, usuarioRepresentante, usuarioRepresentante, usuarioComprador);
 
@@ -200,7 +200,7 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
     public void directEnviarNotificacao() {
         ChatMatrixOrgimpl instance = new ChatMatrixOrgimpl();
         try {
-            ItfUsuarioChat usuario = instance.getUsuarioByEmail("salvio@casanovadigital.com.br");
+            ComoUsuarioChat usuario = instance.getUsuarioByEmail("salvio@casanovadigital.com.br");
             boolean sucesso = instance.enviarDirect(usuario.getCodigoUsuario(), "apenas teste") != null;
             assertTrue("falha enviando mensagem", sucesso);
         } catch (ErroConexaoServicoChat ex) {
@@ -211,7 +211,7 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
     public void getSAlaByCodigo() {
         ChatMatrixOrgimpl instance = new ChatMatrixOrgimpl();
         try {
-            ItfChatSalaBean sala = instance.getSalaByCodigo("!xnlMIZLTTrCHdHUAxI:casanovadigital.com.br");
+            ComoChatSalaBean sala = instance.getSalaByCodigo("!xnlMIZLTTrCHdHUAxI:casanovadigital.com.br");
             System.out.println(sala.getCodigoChat());
             System.out.println(sala.getNome());
             System.out.println(sala.getApelido());
@@ -256,7 +256,7 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
     public void testeGeraacaoAliasCanonico() {
         ChatMatrixOrgimpl instance = new ChatMatrixOrgimpl();
 
-        ItfUsuarioChat usuario;
+        ComoUsuarioChat usuario;
         try {
             usuario = instance.getUsuarioByTelefone("5531986831481");
             System.out.println(usuario.getTelefone());

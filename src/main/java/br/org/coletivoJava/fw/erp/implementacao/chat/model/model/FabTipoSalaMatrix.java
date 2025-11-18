@@ -4,7 +4,7 @@
  */
 package br.org.coletivoJava.fw.erp.implementacao.chat.model.model;
 
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfUsuarioChat;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import br.org.coletivoJava.fw.erp.implementacao.chat.UtilMatrixERP;
 import br.org.coletivoJava.integracoes.matrixChat.config.FabConfigApiMatrixChat;
 import com.google.common.collect.Lists;
@@ -13,7 +13,7 @@ import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringSlugs;
 import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringValidador;
 import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringsCammelCase;
 import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringsExtrator;
-import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ItfBeanSimplesSomenteLeitura;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ComoEntidadeSimplesSomenteLeitura;
 import java.util.ArrayList;
 import java.util.List;
 import org.coletivojava.fw.api.tratamentoErros.ErroPreparandoObjeto;
@@ -23,7 +23,7 @@ import org.coletivojava.fw.api.tratamentoErros.FabErro;
  *
  * @author salvio
  */
-public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
+public enum FabTipoSalaMatrix implements ComoFabricaSalaChat {
 
     WTZAP_ATENDIMENTO,
     WTZAP_VENDAS,
@@ -130,7 +130,7 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
     }
 
     @Override
-    public String getAliasSalaParaUsuario(ItfUsuarioChat pUSuarioLead) {
+    public String getAliasSalaParaUsuario(ComoUsuarioChat pUSuarioLead) {
         String slug = getSlug();
         switch (this) {
             case WTZAP_ATENDIMENTO:
@@ -146,20 +146,20 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
             case CHAT_DINAMICO_DE_ENTIDADE:
 
             default:
-                throw new UnsupportedOperationException("Utilize uma entidade que não seja ItfUsuario chat para gerar o Apelido");
+                throw new UnsupportedOperationException("Utilize uma entidade que não seja ComoUsuario chat para gerar o Apelido");
 
         }
 
     }
 
     @Override
-    public String getAliasSalaParaEnttidade(ItfBeanSimplesSomenteLeitura pBeanVinculado) {
+    public String getAliasSalaParaEnttidade(ComoEntidadeSimplesSomenteLeitura pBeanVinculado) {
         String slug = getSlug();
 
         switch (this) {
             case WTZAP_ATENDIMENTO:
             case WTZAP_VENDAS:
-                throw new UnsupportedOperationException("Utilize uma entidade que não seja ItfUsuario chat para gerar o Apelido");
+                throw new UnsupportedOperationException("Utilize uma entidade que não seja ComoUsuario chat para gerar o Apelido");
 
             case WTZAP_ATENDIMENTO_GRUPO_CLIENTE:
                 throw new UnsupportedOperationException("Atendimento de grupo ainda não foi implmentado");
@@ -170,24 +170,24 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
             case CHAT_DINAMICO_DE_ENTIDADE:
                 return UtilMatrixERP.gerarAliasSalaIDCanonicoObjetoRelacionado(pBeanVinculado, slug);
             default:
-                throw new UnsupportedOperationException("Utilize uma entidade ItfUsuarioChat");
+                throw new UnsupportedOperationException("Utilize uma entidade ComoUsuarioChat");
 
         }
 
     }
 
     @Override
-    public SalaMatrxOrg getSalaMatrix(ItfBeanSimplesSomenteLeitura pBeanVinculado,
-            ItfUsuarioChat pUsuarioDono,
-            List<ItfUsuarioChat> pUsuariosAtendimento,
-            List<ItfUsuarioChat> pUsuarioContatos
+    public SalaMatrxOrg getSalaMatrix(ComoEntidadeSimplesSomenteLeitura pBeanVinculado,
+            ComoUsuarioChat pUsuarioDono,
+            List<ComoUsuarioChat> pUsuariosAtendimento,
+            List<ComoUsuarioChat> pUsuarioContatos
     ) throws ErroPreparandoObjeto {
         if (pUsuarioContatos == null) {
             pUsuarioContatos = new ArrayList<>();
         }
 
         SalaMatrxOrg novaSala = new SalaMatrxOrg();
-        ItfUsuarioChat usuarioContatoPrincipal = null;
+        ComoUsuarioChat usuarioContatoPrincipal = null;
         try {
             if (isChatAtendimentoDeContato()) {
 
@@ -227,7 +227,7 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
         if (novaSala.getUsuarios() == null) {
             novaSala.setUsuarios(new ArrayList());
         }
-        ItfUsuarioChat usuarioAtendimentoPrincipal = null;
+        ComoUsuarioChat usuarioAtendimentoPrincipal = null;
         if (pUsuariosAtendimento != null && !pUsuariosAtendimento.isEmpty()) {
             usuarioAtendimentoPrincipal = pUsuariosAtendimento.get(0);
         }
@@ -277,14 +277,14 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
                 if (pUsuariosAtendimento == null || pUsuariosAtendimento.isEmpty() || pUsuariosAtendimento.size() > 1) {
                     throw new UnsupportedOperationException("o usuário externo é obrigatório pois é utilizado na formação do nome");
                 }
-                ItfUsuarioChat usuarioNovoLead = pUsuariosAtendimento.get(0);
+                ComoUsuarioChat usuarioNovoLead = pUsuariosAtendimento.get(0);
                 novaSala.setApelido(slug + UtilSBCoreStringSlugs.gerarSlugSimples(usuarioNovoLead.getEmail()));
                 novaSala.setNome(getSlug() + usuarioNovoLead.getEmail());
                 System.out.println("Nome da SALA primeiro contato:");
                 System.out.println(novaSala.getNome());
                 if (!novaSala.getUsuarios().contains(usuarioNovoLead)) {
-                    novaSala.getUsuarios().add((ItfUsuarioChat) pUsuariosAtendimento.get(0));
-                    novaSala.getUsuarios().add((ItfUsuarioChat) pUsuarioDono);
+                    novaSala.getUsuarios().add((ComoUsuarioChat) pUsuariosAtendimento.get(0));
+                    novaSala.getUsuarios().add((ComoUsuarioChat) pUsuarioDono);
                 }
                 return novaSala;
 
@@ -294,12 +294,12 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
 
                 novaSala.setApelido(apelido);
                 novaSala.setNome(pBeanVinculado.getNome());
-                for (ItfUsuarioChat usr : pUsuarioContatos) {
+                for (ComoUsuarioChat usr : pUsuarioContatos) {
                     if (!novaSala.getUsuarios().contains(usr)) {
                         novaSala.getUsuarios().add(usr);
                     }
                 }
-                for (ItfUsuarioChat usr : pUsuarioContatos) {
+                for (ComoUsuarioChat usr : pUsuarioContatos) {
                     if (!novaSala.getUsuarios().contains(usr)) {
                         novaSala.getUsuarios().add(usr);
                     }
@@ -311,12 +311,12 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
                 String apelidoChat = getAliasSalaParaEnttidade(pBeanVinculado);
                 novaSala.setApelido(apelidoChat);
                 novaSala.setNome(pBeanVinculado.getNome());
-                for (ItfUsuarioChat usratendimento : pUsuariosAtendimento) {
+                for (ComoUsuarioChat usratendimento : pUsuariosAtendimento) {
                     if (!novaSala.getUsuarios().contains(usratendimento)) {
                         novaSala.getUsuarios().add(usratendimento);
                     }
                 }
-                for (ItfUsuarioChat usr : pUsuarioContatos) {
+                for (ComoUsuarioChat usr : pUsuarioContatos) {
                     if (!novaSala.getUsuarios().contains(usr)) {
                         novaSala.getUsuarios().add(usr);
                     }
@@ -329,12 +329,12 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
                 String apelidoChatDinamico = getAliasSalaParaEnttidade(pBeanVinculado);
                 novaSala.setApelido(apelidoChatDinamico);
                 novaSala.setNome(pBeanVinculado.getNome());
-                for (ItfUsuarioChat usr : pUsuariosAtendimento) {
+                for (ComoUsuarioChat usr : pUsuariosAtendimento) {
                     if (!novaSala.getUsuarios().contains(usr)) {
                         novaSala.getUsuarios().add(usr);
                     }
                 }
-                for (ItfUsuarioChat usr : pUsuarioContatos) {
+                for (ComoUsuarioChat usr : pUsuarioContatos) {
                     if (!novaSala.getUsuarios().contains(usr)) {
                         novaSala.getUsuarios().add(usr);
                     }
@@ -350,7 +350,7 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
     }
 
     @Override
-    public SalaMatrxOrg getSalaMatrix(ItfUsuarioChat pUsuarioDono, ItfUsuarioChat pUsuarioAtendimento, ItfUsuarioChat pUsuarioContato) throws ErroPreparandoObjeto {
+    public SalaMatrxOrg getSalaMatrix(ComoUsuarioChat pUsuarioDono, ComoUsuarioChat pUsuarioAtendimento, ComoUsuarioChat pUsuarioContato) throws ErroPreparandoObjeto {
         switch (this) {
 
             case WTZAP_ATENDIMENTO:
@@ -375,7 +375,7 @@ public enum FabTipoSalaMatrix implements ItfFabricaSalaChat {
     }
 
     @Override
-    public SalaMatrxOrg getSalaMatrixPadrao(ItfUsuarioChat pUsuarioAtendimento, ItfUsuarioChat pUsuariosContato) throws ErroPreparandoObjeto {
+    public SalaMatrxOrg getSalaMatrixPadrao(ComoUsuarioChat pUsuarioAtendimento, ComoUsuarioChat pUsuariosContato) throws ErroPreparandoObjeto {
         return getSalaMatrix(null, pUsuarioAtendimento, Lists.newArrayList(pUsuarioAtendimento), Lists.newArrayList(pUsuariosContato));
     }
 

@@ -1,7 +1,7 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat.sessaoMatrix;
 
 import br.org.coletivoJava.fw.api.erp.chat.ErroConexaoServicoChat;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
 import br.org.coletivoJava.fw.erp.implementacao.chat.ChatMatrixOrgimpl;
 import br.org.coletivoJava.fw.api.erp.chat.ErroMtxParalizacaoDeProcessamento;
 import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.pacotematrix.PacoteMatrixParsing;
@@ -227,7 +227,7 @@ public abstract class SincronizacaoAbstrata {
                                         continue;
                                     }
                                     try {
-                                        ItfChatSalaBean sala = servicoMatrix.getSalaByCodigo(evento.getRoom_id());
+                                        ComoChatSalaBean sala = servicoMatrix.getSalaByCodigo(evento.getRoom_id());
                                         if (servicoMatrix.isSalaMonitoramentoAutomatica(sala.getApelido())) {
                                             SalaChatSessaoEscutaAtiva escuta = servicoMatrix.salaAbrirSessao(sala);
                                             addRoomEventListener(escuta.getEscuta());

@@ -5,7 +5,7 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat.model.model;
 
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfSalaChatSessaoEescutaAtiva;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfListenerEventoMatrix;
 
 /**
@@ -14,16 +14,16 @@ import br.org.coletivoJava.fw.api.erp.chat.model.ItfListenerEventoMatrix;
  */
 public class SalaChatSessaoEscutaAtiva implements ItfSalaChatSessaoEescutaAtiva {
 
-    private final ItfChatSalaBean sala;
+    private final ComoChatSalaBean sala;
     private final ItfListenerEventoMatrix escuta;
 
-    public SalaChatSessaoEscutaAtiva(final ItfChatSalaBean pSala, final ItfListenerEventoMatrix pEscuta) {
+    public SalaChatSessaoEscutaAtiva(final ComoChatSalaBean pSala, final ItfListenerEventoMatrix pEscuta) {
         sala = pSala;
         escuta = pEscuta;
     }
 
     @Override
-    public ItfChatSalaBean getSala() {
+    public ComoChatSalaBean getSala() {
         return sala;
     }
 

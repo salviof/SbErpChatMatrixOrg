@@ -6,7 +6,7 @@ package br.org.coletivoJava.fw.api.erp.chat.notificacoes;
 
 import br.org.coletivoJava.fw.api.erp.chat.ERPChat;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfNotificacaoUsuarioChat;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfUsuarioChat;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import br.org.coletivoJava.integracoes.matrixChat.FabApiRestMatrixNotificacoes;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.WS.conexaoWebServiceClient.ItfRespostaWebServiceSimples;
@@ -23,7 +23,7 @@ import org.coletivojava.fw.api.tratamentoErros.FabErro;
  */
 public class SincronizacaoNotificacoes {
 
-    private List<ItfUsuarioChat> usuariosNaEscuta;
+    private List<ComoUsuarioChat> usuariosNaEscuta;
     private List<ItfRetornoDeChamadaDeNotificacao> processadoresDeNotificacoes = new ArrayList<>();
     private List<ItfNotificacaoUsuarioChat> ultimasNotificacoes = new ArrayList<>();
 

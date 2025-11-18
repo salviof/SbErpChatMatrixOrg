@@ -1,7 +1,7 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat;
 
 import br.org.coletivoJava.fw.api.erp.chat.ErroConexaoServicoChat;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfUsuarioChat;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import br.org.coletivoJava.fw.erp.implementacao.chat.ChatMatrixOrgimpl;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
 import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringTelefone;
@@ -18,8 +18,8 @@ import org.coletivojava.fw.api.tratamentoErros.FabErro;
  */
 public class NormalizarMembrosThread extends Thread {
 
-    private final List<ItfUsuarioChat> membrosIdeais;
-    private final List<ItfUsuarioChat> membrosReais;
+    private final List<ComoUsuarioChat> membrosIdeais;
+    private final List<ComoUsuarioChat> membrosReais;
     private final boolean excluirUsuariosNaoIdealizados;
     private final ChatMatrixOrgimpl chatService;
     private final String codigoSala;
@@ -35,8 +35,8 @@ public class NormalizarMembrosThread extends Thread {
      * @param pUsuariosReais Lista de usuários reais na sala.
      */
     public NormalizarMembrosThread(ChatMatrixOrgimpl pChatService, boolean pExcluirUsuariosNaoIdealizados,
-            String pCodigoSala, List<ItfUsuarioChat> pUsuariosIdeais,
-            List<ItfUsuarioChat> pUsuariosReais) {
+            String pCodigoSala, List<ComoUsuarioChat> pUsuariosIdeais,
+            List<ComoUsuarioChat> pUsuariosReais) {
         this.membrosIdeais = pUsuariosIdeais != null ? new ArrayList<>(pUsuariosIdeais) : new ArrayList<>();
         this.membrosReais = pUsuariosReais != null ? new ArrayList<>(pUsuariosReais) : new ArrayList<>();
         this.excluirUsuariosNaoIdealizados = pExcluirUsuariosNaoIdealizados;
@@ -53,12 +53,12 @@ public class NormalizarMembrosThread extends Thread {
      * @param pMembrosReais Lista de usuários reais na sala.
      */
     public NormalizarMembrosThread(ChatMatrixOrgimpl pChatService, String pCodigoSala,
-            List<ItfUsuarioChat> pMembrosIdeais, List<ItfUsuarioChat> pMembrosReais) {
+            List<ComoUsuarioChat> pMembrosIdeais, List<ComoUsuarioChat> pMembrosReais) {
         this(pChatService, false, pCodigoSala, pMembrosIdeais, pMembrosReais);
     }
 
     public NormalizarMembrosThread(ChatMatrixOrgimpl pChatService, String pCodigoSala,
-            List<ItfUsuarioChat> pMembrosIdeais, List<ItfUsuarioChat> pMembrosReais, boolean removerUsuarios) {
+            List<ComoUsuarioChat> pMembrosIdeais, List<ComoUsuarioChat> pMembrosReais, boolean removerUsuarios) {
         this(pChatService, removerUsuarios, pCodigoSala, pMembrosIdeais, pMembrosReais);
     }
 
@@ -79,7 +79,7 @@ public class NormalizarMembrosThread extends Thread {
         List<String> telefonesReaisContatos = new ArrayList<>();
         membrosReais.stream()
                 .filter(usr -> chatService.isUmUsuarioAtendimento(usr) && usr.getEmail() != null && !usr.getEmail().isEmpty())
-                .map(ItfUsuarioChat::getEmail)
+                .map(ComoUsuarioChat::getEmail)
                 .forEach(emailsReaisAtendimento::add);
         membrosReais.stream()
                 .filter(usr -> chatService.isUmUsuarioContato(usr) && usr.getTelefone() != null && !usr.getTelefone().isEmpty())
@@ -87,7 +87,7 @@ public class NormalizarMembrosThread extends Thread {
                 .forEach(telefonesReaisContatos::add);
 
         // Identifica usuários idealizados não encontrados
-        List<ItfUsuarioChat> usuariosIdealizadosNaoEncontrados = membrosIdeais.stream()
+        List<ComoUsuarioChat> usuariosIdealizadosNaoEncontrados = membrosIdeais.stream()
                 .filter(usr -> {
                     if (chatService.isUmUsuarioAtendimento(usr)) {
                         return usr.getEmail() != null && !usr.getEmail().isEmpty()
@@ -102,7 +102,7 @@ public class NormalizarMembrosThread extends Thread {
                 .collect(Collectors.toList());
 
         // Adiciona usuários idealizados não encontrados à sala
-        for (ItfUsuarioChat usuario : usuariosIdealizadosNaoEncontrados) {
+        for (ComoUsuarioChat usuario : usuariosIdealizadosNaoEncontrados) {
             try {
                 chatService.salaAdicionarMembro(chatService.getSalaByCodigo(codigoSala), usuario.getCodigoUsuario());
             } catch (ErroConexaoServicoChat ex) {
@@ -116,14 +116,14 @@ public class NormalizarMembrosThread extends Thread {
             List<String> telefonesIdeaisContatos = new ArrayList<>();
             membrosIdeais.stream()
                     .filter(usr -> chatService.isUmUsuarioAtendimento(usr) && usr.getEmail() != null && !usr.getEmail().isEmpty())
-                    .map(ItfUsuarioChat::getEmail)
+                    .map(ComoUsuarioChat::getEmail)
                     .forEach(emailsIdeaisAtendimento::add);
             membrosIdeais.stream()
                     .filter(usr -> chatService.isUmUsuarioContato(usr) && usr.getTelefone() != null && !usr.getTelefone().isEmpty())
                     .map(usr -> UtilSBCoreStringTelefone.gerarCeluarInternacional(usr.getTelefone()))
                     .forEach(telefonesIdeaisContatos::add);
 
-            for (ItfUsuarioChat membro : membrosReais) {
+            for (ComoUsuarioChat membro : membrosReais) {
                 // Evita remover o administrador
                 if (membro.getCodigoUsuario().equals(chatService.getUsuarioAdmin().getCodigoUsuario())) {
                     continue;
@@ -166,8 +166,8 @@ public class NormalizarMembrosThread extends Thread {
      * @param tipoLista Tipo da lista ("idealizados" ou "reais") para mensagens
      * de erro.
      */
-    private void validarUsuarios(List<ItfUsuarioChat> usuarios, String tipoLista) {
-        for (ItfUsuarioChat usr : usuarios) {
+    private void validarUsuarios(List<ComoUsuarioChat> usuarios, String tipoLista) {
+        for (ComoUsuarioChat usr : usuarios) {
             if (usr.getCodigoUsuario().equals(chatService.getUsuarioAdmin().getCodigoUsuario())) {
                 continue;
             }

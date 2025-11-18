@@ -5,7 +5,7 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat.sessaoMatrix.listeners;
 
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfListenerEventoMatrix;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfChatSalaBean;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
 import static br.org.coletivoJava.fw.api.erp.chat.model.FabTipoPacoteDeAcaoMatrix.ATUALIZACAO_MEMBROS;
 import static br.org.coletivoJava.fw.api.erp.chat.model.FabTipoPacoteDeAcaoMatrix.DIGITANDO;
 import static br.org.coletivoJava.fw.api.erp.chat.model.FabTipoPacoteDeAcaoMatrix.LEITURA;
@@ -24,13 +24,13 @@ import org.coletivojava.fw.api.tratamentoErros.FabErro;
  */
 public abstract class EscutaSalaMatrixAbst implements ItfListenerEventoMatrix {
 
-    private ItfChatSalaBean sala;
+    private ComoChatSalaBean sala;
 
     private final Date dataExpira;
 
     private final Date datainicial;
 
-    protected ItfChatSalaBean setSalaAtualizada(ItfChatSalaBean pDadosSalaAtualizados) {
+    protected ComoChatSalaBean setSalaAtualizada(ComoChatSalaBean pDadosSalaAtualizados) {
         if (!pDadosSalaAtualizados.getCodigoChat().equals(sala.getCodigoChat())) {
             throw new UnsupportedOperationException("a Sala não pde ser alterada, apenas atualizada");
         }
@@ -38,14 +38,14 @@ public abstract class EscutaSalaMatrixAbst implements ItfListenerEventoMatrix {
         return sala;
     }
 
-    public EscutaSalaMatrixAbst(ItfChatSalaBean pSala) {
+    public EscutaSalaMatrixAbst(ComoChatSalaBean pSala) {
         sala = pSala;
         datainicial = new Date();
         dataExpira = UtilSBCoreDataHora.incrementaHoras(datainicial, 24);
 
     }
 
-    public ItfChatSalaBean getSala() {
+    public ComoChatSalaBean getSala() {
         return sala;
     }
 
@@ -57,7 +57,7 @@ public abstract class EscutaSalaMatrixAbst implements ItfListenerEventoMatrix {
         return datainicial;
     }
 
-    public abstract ItfChatSalaBean atualizarDtoSala();
+    public abstract ComoChatSalaBean atualizarDtoSala();
 
     public abstract void eventoDigitando(ItfEventoMatix pEvento);
 
@@ -113,7 +113,7 @@ public abstract class EscutaSalaMatrixAbst implements ItfListenerEventoMatrix {
                     eventoLeitura(pEvento);
                     break;
                 case ATUALIZACAO_MEMBROS:
-                    ItfChatSalaBean salaDTOAtualizado = atualizarDtoSala();
+                    ComoChatSalaBean salaDTOAtualizado = atualizarDtoSala();
                     if (salaDTOAtualizado != null) {
                         sala = salaDTOAtualizado;
                     }

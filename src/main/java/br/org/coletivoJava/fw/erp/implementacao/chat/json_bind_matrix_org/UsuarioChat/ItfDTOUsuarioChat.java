@@ -1,17 +1,16 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.UsuarioChat;
 
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.erp.dto.ItfDTOSBJSON;
-import br.org.coletivoJava.fw.api.erp.chat.model.ItfUsuarioChat;
+import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.UsuarioChat.JsonBindDTOUsuarioChat;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ComoGrupoUsuario;
 import java.lang.String;
 import java.util.List;
 import java.util.Date;
-import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ItfGrupoUsuario;
-import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.cep.ItfLocalPostagem;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.cep.ComoLocalPostagem;
 
 @JsonDeserialize(using = JsonBindDTOUsuarioChat.class)
-public interface ItfDTOUsuarioChat extends ItfDTOSBJSON, ItfUsuarioChat {
+public interface ItfDTOUsuarioChat extends ItfDTOSBJSON, ComoUsuarioChat {
 
     @Override
     public default String getCodigoUsuario() {
@@ -59,8 +58,8 @@ public interface ItfDTOUsuarioChat extends ItfDTOSBJSON, ItfUsuarioChat {
     }
 
     @Override
-    public default ItfGrupoUsuario getGrupo() {
-        return (ItfGrupoUsuario) getValorPorReflexao();
+    public default ComoGrupoUsuario getGrupo() {
+        return (ComoGrupoUsuario) getValorPorReflexao();
     }
 
     @Override
@@ -74,8 +73,8 @@ public interface ItfDTOUsuarioChat extends ItfDTOSBJSON, ItfUsuarioChat {
     }
 
     @Override
-    public default ItfLocalPostagem getLocalizacao() {
-        return (ItfLocalPostagem) getValorPorReflexao();
+    public default ComoLocalPostagem getLocalizacao() {
+        return (ComoLocalPostagem) getValorPorReflexao();
     }
 
     @Override
