@@ -7,7 +7,7 @@ import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basic
 import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.cep.ComoLocal;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.cep.ComoLocalPostagem;
 
-import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.ItemNormal;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.EntidadeNormal;
 import java.util.Date;
 import java.util.List;
 
@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @author salvio
  */
-public class UsuarioChatMatrixOrg extends ItemNormal implements ComoUsuarioChat {
+public class UsuarioChatMatrixOrg extends EntidadeNormal implements ComoUsuarioChat {
 
     @InfoCampo(tipo = FabTipoAtributoObjeto.ID)
     private Long id;

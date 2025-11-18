@@ -7,7 +7,7 @@ package br.org.coletivoJava.fw.erp.implementacao.chat.model.model;
 import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
 import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.InfoCampos.anotacoes.InfoObjetoSB;
-import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.ItemSimples;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.EntidadeSimples;
 import java.util.List;
 
 /**
@@ -15,7 +15,7 @@ import java.util.List;
  * @author salvio
  */
 @InfoObjetoSB(plural = "Salas MAtrix", tags = "Sala MAtrix")
-public class SalaMatrxOrg extends ItemSimples implements ComoChatSalaBean {
+public class SalaMatrxOrg extends EntidadeSimples implements ComoChatSalaBean {
 
     private String codigoChat;
     private String apelido;
