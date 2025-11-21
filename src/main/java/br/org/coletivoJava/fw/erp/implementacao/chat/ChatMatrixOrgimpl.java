@@ -100,7 +100,7 @@ public class ChatMatrixOrgimpl
         }
 
         StringBuilder senha = new StringBuilder();
-        senha.append(UtilSBCoreStringTelefone.gerarCeluarInternacional(pUsuario.getTelefone()));
+        senha.append(UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(pUsuario.getTelefone()));
         senha.append(SBCore.getConfigModulo(FabConfigApiMatrixChat.class).getPropriedade(FabConfigApiMatrixChat.SEGREDO));
         String hashSenha = UtilSBCoreCriptrografia.getHash128HexaMD5AsString(senha.toString());
         return hashSenha;
@@ -496,7 +496,7 @@ public class ChatMatrixOrgimpl
 
     @Override
     public ComoUsuarioChat getUsuarioByTelefone(String pTelefone) throws ErroConexaoServicoChat {
-        pTelefone = UtilSBCoreStringTelefone.gerarCeluarInternacional(pTelefone);
+        pTelefone = UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(pTelefone);
         if (mapaUsuarioChatByTelefone.containsKey(pTelefone)) {
             return mapaUsuarioChatByTelefone.get(pTelefone);
         }
@@ -541,7 +541,7 @@ public class ChatMatrixOrgimpl
     }
 
     private ComoUsuarioChat registraUsuarioPorTelefone(ComoUsuarioChat pUsuario) {
-        String telefone = UtilSBCoreStringTelefone.gerarCeluarInternacional(pUsuario.getTelefone());
+        String telefone = UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(pUsuario.getTelefone());
         mapaUsuarioChatByEmail.put(telefone, pUsuario);
         mapaUsuarioChatByCodigo.put(pUsuario.getCodigoUsuario(), pUsuario);
         return pUsuario;
@@ -1218,7 +1218,7 @@ public class ChatMatrixOrgimpl
 
     @Override
     public ComoUsuarioChat usuarioAtualizar(String pCodigo, String pNome, String pEmail, String pTelefone) throws ErroConexaoServicoChat {
-        String telefone = UtilSBCoreStringTelefone.gerarCeluarInternacional(pTelefone);
+        String telefone = UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(pTelefone);
         ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatUsuarios.USUARIO_ATUALIZAR.getAcao(
                 pCodigo,
                 pNome,
@@ -1327,7 +1327,7 @@ public class ChatMatrixOrgimpl
     @Override
     public String gerarCodigoUsuarioContato(String pWhatsappTelefone) throws ErroRegraDeNEgocioChat, ErroConexaoServicoChat {
 
-        String telefone = UtilSBCoreStringTelefone.gerarCeluarInternacional(pWhatsappTelefone);
+        String telefone = UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(pWhatsappTelefone);
         if (telefone == null) {
             throw new ErroRegraDeNEgocioChat("O Telefone não é válido");
         }
@@ -1357,7 +1357,7 @@ public class ChatMatrixOrgimpl
 
     @Override
     public ComoUsuarioChat gerarUsuarioContato(String pNome, String pTelefoneInternacional) throws ErroConexaoServicoChat, ErroRegraDeNEgocioChat {
-        String telefoneInternacional = UtilSBCoreStringTelefone.gerarCeluarInternacional(pTelefoneInternacional);
+        String telefoneInternacional = UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(pTelefoneInternacional);
 
         //telefoneInternacional = telefoneInternacional.replace("+", "");
         if (telefoneInternacional == null) {
