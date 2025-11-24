@@ -1,9 +1,9 @@
-package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ChatSalaBean;
+package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ComoChatSalaBean;
 
 import br.org.coletivoJava.fw.api.erp.chat.ERPChat;
 import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import br.org.coletivoJava.fw.erp.implementacao.chat.UtilMatrixERP;
-import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.UsuarioChat.DTOUsuarioChat;
+import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ComoUsuarioChat.DTOComoUsuarioChat;
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.erp.dto.DTO_SB_JSON_PROCESSADOR_GENERICO;
 import br.org.coletivoJava.integracoes.matrixChat.FabApiRestIntMatrixChatUsuarios;
 import com.fasterxml.jackson.core.JacksonException;
@@ -23,17 +23,17 @@ import org.coletivojava.fw.api.tratamentoErros.FabErro;
 
 public class JsonBindDTOChatSalaBean
         extends
-        DTO_SB_JSON_PROCESSADOR_GENERICO<DTOChatSalaBean> {
+        DTO_SB_JSON_PROCESSADOR_GENERICO<DTOComoChatSalaBean> {
 
     public JsonBindDTOChatSalaBean() {
-        super(DTOChatSalaBean.class);
+        super(DTOComoChatSalaBean.class);
     }
 
     @Override
-    public DTOChatSalaBean deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JacksonException {
+    public DTOComoChatSalaBean deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JacksonException {
         ObjectCodec codec = jp.getCodec();
         JsonNode node = codec.readTree(jp);
-        DTOChatSalaBean dto = new DTOChatSalaBean();
+        DTOComoChatSalaBean dto = new DTOComoChatSalaBean();
         adicionarPropriedadeInteiro("id", node, "room_id");
         adicionarPropriedadeString("codigoChat", node, "room_id");
         adicionarPropriedadeString("nome", node, "name");
@@ -55,7 +55,7 @@ public class JsonBindDTOChatSalaBean
             try {
                 JsonString codigoUsuario = (JsonString) us;
                 ItfRespostaWebServiceSimples respDadpsUsuario = FabApiRestIntMatrixChatUsuarios.USUARIO_OBTER_DADOS.getAcao(codigoUsuario.getString()).getResposta();
-                DTOUsuarioChat usuario = (DTOUsuarioChat) ERPChat.MATRIX_ORG.getDTO(UtilSBCoreJson.getTextoByJsonObjeect(respDadpsUsuario.getRespostaComoObjetoJson()), ComoUsuarioChat.class);
+                DTOComoUsuarioChat usuario = (DTOComoUsuarioChat) ERPChat.MATRIX_ORG.getDTO(UtilSBCoreJson.getTextoByJsonObjeect(respDadpsUsuario.getRespostaComoObjetoJson()), ComoUsuarioChat.class);
                 usuarios.add(usuario);
             } catch (ErroJsonInterpredador ex) {
                 SBCore.RelatarErro(FabErro.SOLICITAR_REPARO, "Falha processando json de usuaŕio", ex);

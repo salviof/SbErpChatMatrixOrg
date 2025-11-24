@@ -39,8 +39,10 @@ import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringValidador;
 import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringsCammelCase;
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.WS.conexaoWebServiceClient.ItfRespostaWebServiceSimples;
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.token.ItfTokenGestao;
+import com.super_bits.modulosSB.SBCore.modulos.Controller.Interfaces.permissoes.ErroDadosDeContatoUsuarioNaoEncontrado;
 import com.super_bits.modulosSB.SBCore.modulos.erp.ErroJsonInterpredador;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ComoUsuario;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.contato.ComoContatoHumano;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
@@ -87,11 +89,17 @@ public class ChatMatrixOrgimpl
         if (!pCodigoUsuario.contains(".ct:")) {
             throw new ErroRegraDeNEgocioChat("Apenas usuários do tipo contato tem senhas autogerenciadas");
         }
-        if (pUsuario.getTelefone() == null) {
-            throw new ErroRegraDeNEgocioChat("Usuário sem telefone, senhas autogerenciadas, são apenas para usuários que acessam exclusivamente pelo whasapp");
+        ComoContatoHumano contato = null;
+        try {
+            contato = SBCore.getServicoPermissao().getContatoDoUsuario(pUsuario);
+            if (contato == null) {
+                throw new ErroRegraDeNEgocioChat("Os dados de contato do usuário " + pUsuario.getNome() + " não foram encontrados");
+            }
+        } catch (ErroDadosDeContatoUsuarioNaoEncontrado ex) {
+            throw new ErroRegraDeNEgocioChat("Os dados de contato do usuário " + pUsuario.getNome() + " não foram encontrados");
         }
 
-        if (pUsuario.getEmail() != null) {
+        if (contato.getEmail() != null) {
 
             if (pUsuario.getEmail().split("@")[1].endsWith(FabConfigApiMatrixChat.DOMINIO_FEDERADO.getValorParametroSistema())) {
                 throw new ErroRegraDeNEgocioChat("Usuário possui e-mail corporativo, senhas autogerenciadas, são apenas para usuários que acessam exclusivamente pelo whasapp");
@@ -100,7 +108,17 @@ public class ChatMatrixOrgimpl
         }
 
         StringBuilder senha = new StringBuilder();
-        senha.append(UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(pUsuario.getTelefone()));
+        String telefone = null;
+        try {
+            telefone = SBCore.getServicoPermissao().getContatoDoUsuario(pUsuario).getCelular();
+        } catch (ErroDadosDeContatoUsuarioNaoEncontrado ex) {
+            Logger.getLogger(ChatMatrixOrgimpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if (pUsuario.getTelefone() == null) {
+            throw new ErroRegraDeNEgocioChat("Usuário sem telefone, senhas autogerenciadas, são apenas para usuários que acessam exclusivamente pelo whasapp");
+        }
+
+        senha.append(UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(telefone));
         senha.append(SBCore.getConfigModulo(FabConfigApiMatrixChat.class).getPropriedade(FabConfigApiMatrixChat.SEGREDO));
         String hashSenha = UtilSBCoreCriptrografia.getHash128HexaMD5AsString(senha.toString());
         return hashSenha;

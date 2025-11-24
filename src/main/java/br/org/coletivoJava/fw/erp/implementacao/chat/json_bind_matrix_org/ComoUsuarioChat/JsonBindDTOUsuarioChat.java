@@ -1,4 +1,4 @@
-package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.UsuarioChat;
+package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ComoUsuarioChat;
 
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.erp.dto.DTO_SB_JSON_PROCESSADOR_GENERICO;
 import com.fasterxml.jackson.core.JacksonException;
@@ -15,19 +15,19 @@ import java.util.Optional;
 
 public class JsonBindDTOUsuarioChat
         extends
-        DTO_SB_JSON_PROCESSADOR_GENERICO<DTOUsuarioChat> {
+        DTO_SB_JSON_PROCESSADOR_GENERICO<DTOComoUsuarioChat> {
 
     public JsonBindDTOUsuarioChat() {
-        super(DTOUsuarioChat.class);
+        super(DTOComoUsuarioChat.class);
     }
 
     @Override
-    public DTOUsuarioChat deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JacksonException {
+    public DTOComoUsuarioChat deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JacksonException {
 
         ObjectCodec codec = jp.getCodec();
         JsonNode node = codec.readTree(jp);
 
-        DTOUsuarioChat dto = new DTOUsuarioChat();
+        DTOComoUsuarioChat dto = new DTOComoUsuarioChat();
 
         adicionarPropriedadeString("imgPequena", node, "avatar_url");
         adicionarPropriedadeInteiro("id", node, "name");

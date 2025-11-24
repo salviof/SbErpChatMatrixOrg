@@ -1,9 +1,9 @@
-package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ChatSalaBean;
+package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ComoChatSalaBean;
 
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.erp.dto.ItfDTOSBJSON;
 import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ChatSalaBean.JsonBindDTOChatSalaBean;
+import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ComoChatSalaBean.JsonBindDTOChatSalaBean;
 import java.lang.String;
 import java.util.List;
 

@@ -1,18 +1,18 @@
-package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.UsuarioChat;
+package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ComoUsuarioChat;
 
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.erp.dto.DTO_SBGENERICO;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ComoGrupoUsuario;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.cep.ComoLocal;
 
-public class DTOUsuarioChat extends DTO_SBGENERICO<ItfDTOUsuarioChat>
+public class DTOComoUsuarioChat extends DTO_SBGENERICO<ItfDTOUsuarioChat>
         implements
         ItfDTOUsuarioChat {
 
-    public DTOUsuarioChat(String pJson) {
+    public DTOComoUsuarioChat(String pJson) {
         super(JsonBindDTOUsuarioChat.class, pJson);
     }
 
-    public DTOUsuarioChat() {
+    public DTOComoUsuarioChat() {
         super(null, null);
     }
 

@@ -5,6 +5,7 @@ import br.org.coletivoJava.fw.api.erp.chat.model.ItfNotificacaoUsuarioChat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.NotificacaoUsuarioChat.JsonBindDTONotificacaoUsuarioChat;
 import java.lang.String;
+import java.lang.Long;
 
 @JsonDeserialize(using = JsonBindDTONotificacaoUsuarioChat.class)
 public interface ItfDTONotificacaoUsuarioChat
@@ -23,7 +24,7 @@ public interface ItfDTONotificacaoUsuarioChat
     }
 
     @Override
-    public default String getEventoJson() {
+    public default String getConteudo() {
         return (String) getValorPorReflexao();
     }
 
@@ -33,17 +34,12 @@ public interface ItfDTONotificacaoUsuarioChat
     }
 
     @Override
-    public default String getConteudo() {
-        return (String) getValorPorReflexao();
-    }
-
-    @Override
     public default String getTipoEvento() {
         return (String) getValorPorReflexao();
     }
 
     @Override
-    public default String getNomeUnicoSlug() {
+    public default String getEventoJson() {
         return (String) getValorPorReflexao();
     }
 
@@ -58,22 +54,23 @@ public interface ItfDTONotificacaoUsuarioChat
     }
 
     @Override
-    public default String getNome() {
-        return (String) getValorPorReflexao();
-    }
-
-    @Override
-    public default String getIconeDaClasse() {
-        return (String) getValorPorReflexao();
-    }
-
-    @Override
-    public default String getNomeCurto() {
+    public default String getNomeUnicoSlug() {
         return (String) getValorPorReflexao();
     }
 
     @Override
     public default Long getId() {
-        return (long) getValorPorReflexao();
+        return (Long) getValorPorReflexao();
     }
+
+    @Override
+    public default String getNomeDoObjetoPlural() {
+        return (String) getValorPorReflexao();
+    }
+
+    @Override
+    public default String getNomeDoObjeto() {
+        return (String) getValorPorReflexao();
+    }
+
 }
