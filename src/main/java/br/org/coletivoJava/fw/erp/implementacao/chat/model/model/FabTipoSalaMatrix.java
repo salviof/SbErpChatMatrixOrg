@@ -9,10 +9,10 @@ import br.org.coletivoJava.fw.erp.implementacao.chat.UtilMatrixERP;
 import br.org.coletivoJava.integracoes.matrixChat.config.FabConfigApiMatrixChat;
 import com.google.common.collect.Lists;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringSlugs;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringValidador;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringsCammelCase;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringsExtrator;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCStringSlugs;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCStringValidador;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCStringsCammelCase;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCStringsExtrator;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ComoEntidadeSimplesSomenteLeitura;
 import java.util.ArrayList;
 import java.util.List;
@@ -236,12 +236,12 @@ public enum FabTipoSalaMatrix implements ComoFabricaSalaChat {
         switch (this) {
             case WTZAP_ATENDIMENTO:
 
-                if (UtilSBCoreStringValidador.isNuloOuEmbranco(usuarioContatoPrincipal.getTelefone())) {
+                if (UtilCRCStringValidador.isNuloOuEmbranco(usuarioContatoPrincipal.getTelefone())) {
                     throw new ErroPreparandoObjeto(novaSala, "O telefone do destinatario é obrigatório");
                 }
 
-                String nomeClienteReduzido = UtilSBCoreStringsExtrator.getNomeReduzido(usuarioContatoPrincipal.getNome());
-                nomeClienteReduzido = UtilSBCoreStringsCammelCase.getCamelByTextoPrimeiraLetraMaiuscula(nomeClienteReduzido);
+                String nomeClienteReduzido = UtilCRCStringsExtrator.getNomeReduzido(usuarioContatoPrincipal.getNome());
+                nomeClienteReduzido = UtilCRCStringsCammelCase.getCamelByTextoPrimeiraLetraMaiuscula(nomeClienteReduzido);
                 nomeSala.append(nomeClienteReduzido);
                 nomeSala.append(usuarioContatoPrincipal.getTelefone());
                 nomeSala.append("_");
@@ -255,12 +255,12 @@ public enum FabTipoSalaMatrix implements ComoFabricaSalaChat {
                 break;
             case WTZAP_VENDAS:
 
-                if (UtilSBCoreStringValidador.isNuloOuEmbranco(usuarioContatoPrincipal.getTelefone())) {
+                if (UtilCRCStringValidador.isNuloOuEmbranco(usuarioContatoPrincipal.getTelefone())) {
                     throw new ErroPreparandoObjeto(novaSala, "O telefone do destinatario é obrigatório");
                 }
 
-                String nomeLeadReduzido = UtilSBCoreStringsExtrator.getNomeReduzido(usuarioContatoPrincipal.getNome());
-                nomeLeadReduzido = UtilSBCoreStringsCammelCase.getCamelByTextoPrimeiraLetraMaiuscula(nomeLeadReduzido);
+                String nomeLeadReduzido = UtilCRCStringsExtrator.getNomeReduzido(usuarioContatoPrincipal.getNome());
+                nomeLeadReduzido = UtilCRCStringsCammelCase.getCamelByTextoPrimeiraLetraMaiuscula(nomeLeadReduzido);
                 nomeSala.append(nomeLeadReduzido);
                 nomeSala.append(usuarioContatoPrincipal.getTelefone());
                 nomeSala.append("_");
@@ -278,7 +278,7 @@ public enum FabTipoSalaMatrix implements ComoFabricaSalaChat {
                     throw new UnsupportedOperationException("o usuário externo é obrigatório pois é utilizado na formação do nome");
                 }
                 ComoUsuarioChat usuarioNovoLead = pUsuariosAtendimento.get(0);
-                novaSala.setApelido(slug + UtilSBCoreStringSlugs.gerarSlugSimples(usuarioNovoLead.getEmail()));
+                novaSala.setApelido(slug + UtilCRCStringSlugs.gerarSlugSimples(usuarioNovoLead.getEmail()));
                 novaSala.setNome(getSlug() + usuarioNovoLead.getEmail());
                 System.out.println("Nome da SALA primeiro contato:");
                 System.out.println(novaSala.getNome());
@@ -384,7 +384,7 @@ public enum FabTipoSalaMatrix implements ComoFabricaSalaChat {
             getApelidoNomeUnicoSpace() {
         String dominioFederado = SBCore.getConfigModulo(FabConfigApiMatrixChat.class
         ).getPropriedade(FabConfigApiMatrixChat.DOMINIO_FEDERADO);
-        return "#" + UtilSBCoreStringsCammelCase.getCamelByTextoPrimeiraLetraMaiusculaSemCaracterEspecial(toString()).toLowerCase()
+        return "#" + UtilCRCStringsCammelCase.getCamelByTextoPrimeiraLetraMaiusculaSemCaracterEspecial(toString()).toLowerCase()
                 + ":" + dominioFederado;
 
     }

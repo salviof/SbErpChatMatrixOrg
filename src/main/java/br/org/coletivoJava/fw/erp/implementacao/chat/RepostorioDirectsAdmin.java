@@ -7,8 +7,8 @@ package br.org.coletivoJava.fw.erp.implementacao.chat;
 import br.org.coletivoJava.integracoes.matrixChat.config.FabConfigApiMatrixChat;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
 import com.super_bits.modulosSB.SBCore.UtilGeral.UTilSBCoreInputs;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreJson;
-import com.super_bits.modulosSB.SBCore.modulos.ManipulaArquivo.UtilSBCoreArquivoTexto;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCJson;
+import com.super_bits.modulosSB.SBCore.modulos.ManipulaArquivo.UtilCRCArquivoTexto;
 import groovy.json.JsonBuilder;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -43,7 +43,7 @@ public class RepostorioDirectsAdmin {
             return;
         }
         MAPA_USUARIO_SALA_DIRECTS_ADMIN = new HashMap<>();
-        JsonObject json = UtilSBCoreJson.getJsonObjectByTexto(UTilSBCoreInputs.getStringByArquivoLocal(getArquivoDirects()));
+        JsonObject json = UtilCRCJson.getJsonObjectByTexto(UTilSBCoreInputs.getStringByArquivoLocal(getArquivoDirects()));
         JsonArray listaDirects = json.getJsonArray(ChatMatrixOrgimpl.getCodigoUsuarioAdmin());
         for (JsonValue v : listaDirects) {
             MAPA_USUARIO_SALA_DIRECTS_ADMIN.put(v.asJsonObject().getString("user_id"),
@@ -62,7 +62,7 @@ public class RepostorioDirectsAdmin {
             chaveJson.add(dadosUsuario);
         }
         jsonB.add(codigoUsuario, chaveJson);
-        UtilSBCoreArquivoTexto.escreverEmArquivoSubstituindoArqAnterior(getArquivoDirects(), UtilSBCoreJson.getTextoByJsonObjeect(jsonB.build()));
+        UtilCRCArquivoTexto.escreverEmArquivoSubstituindoArqAnterior(getArquivoDirects(), UtilCRCJson.getTextoByJsonObjeect(jsonB.build()));
 
     }
 

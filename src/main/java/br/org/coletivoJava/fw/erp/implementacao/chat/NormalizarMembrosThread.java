@@ -4,7 +4,7 @@ import br.org.coletivoJava.fw.api.erp.chat.ErroConexaoServicoChat;
 import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import br.org.coletivoJava.fw.erp.implementacao.chat.ChatMatrixOrgimpl;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringTelefone;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCStringTelefone;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -83,7 +83,7 @@ public class NormalizarMembrosThread extends Thread {
                 .forEach(emailsReaisAtendimento::add);
         membrosReais.stream()
                 .filter(usr -> chatService.isUmUsuarioContato(usr) && usr.getTelefone() != null && !usr.getTelefone().isEmpty())
-                .map(usr -> UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(usr.getTelefone()))
+                .map(usr -> UtilCRCStringTelefone.gerarNumeroTelefoneInternacional(usr.getTelefone()))
                 .forEach(telefonesReaisContatos::add);
 
         // Identifica usuários idealizados não encontrados
@@ -94,7 +94,7 @@ public class NormalizarMembrosThread extends Thread {
                                 && !emailsReaisAtendimento.contains(usr.getEmail());
                     } else if (chatService.isUmUsuarioContato(usr)) {
                         return usr.getTelefone() != null && !usr.getTelefone().isEmpty()
-                                && !telefonesReaisContatos.contains(UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(usr.getTelefone()));
+                                && !telefonesReaisContatos.contains(UtilCRCStringTelefone.gerarNumeroTelefoneInternacional(usr.getTelefone()));
                     }
                     return false; // Usuários sem tipo válido são ignorados
                 })
@@ -120,7 +120,7 @@ public class NormalizarMembrosThread extends Thread {
                     .forEach(emailsIdeaisAtendimento::add);
             membrosIdeais.stream()
                     .filter(usr -> chatService.isUmUsuarioContato(usr) && usr.getTelefone() != null && !usr.getTelefone().isEmpty())
-                    .map(usr -> UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(usr.getTelefone()))
+                    .map(usr -> UtilCRCStringTelefone.gerarNumeroTelefoneInternacional(usr.getTelefone()))
                     .forEach(telefonesIdeaisContatos::add);
 
             for (ComoUsuarioChat membro : membrosReais) {
@@ -138,7 +138,7 @@ public class NormalizarMembrosThread extends Thread {
                     }
                 } else if (chatService.isUmUsuarioContato(membro)) {
                     if (membro.getTelefone() == null || membro.getTelefone().isEmpty()
-                            || !telefonesIdeaisContatos.contains(UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(membro.getTelefone()))) {
+                            || !telefonesIdeaisContatos.contains(UtilCRCStringTelefone.gerarNumeroTelefoneInternacional(membro.getTelefone()))) {
                         deveRemover = true;
                     }
                 } else {

@@ -13,7 +13,7 @@ import br.org.coletivoJava.fw.api.erp.chat.model.ErroComandoAtendimentoInvalido;
 import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.pacotematrix.PacoteDeEventosMatrix;
 import br.org.coletivoJava.integracoes.matrixChat.config.FabConfigApiMatrixChat;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreJson;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCJson;
 import de.jojii.matrixclientserver.Callbacks.DataCallback;
 import de.jojii.matrixclientserver.File.FileHelper;
 import de.jojii.matrixclientserver.File.Files;
@@ -160,7 +160,7 @@ public abstract class SincronizacaoAbstrata {
                     }
 
                     if (data != null && data.length() > 0) {
-                        JsonObject dadosJson = UtilSBCoreJson.getJsonObjectByTexto(data);
+                        JsonObject dadosJson = UtilCRCJson.getJsonObjectByTexto(data);
                         if (primeiroPricessamento && SBCore.isEmModoDesenvolvimento()) {
                             //Quando em desenvolvimento, não lê os enventos antigos
                             String nexBatchPrimeiraLeitura = dadosJson.getString("next_batch");

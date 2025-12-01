@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreJson;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCJson;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
@@ -34,7 +34,7 @@ public class JsonBindDTOUsuarioChat
         adicionarPropriedadeString("codigoUsuario", node, "name");
         adicionarPropriedadeString("nome", node, "displayname");
         adicionarPropriedadeString("apelido", node, "username");
-        JsonObject json = UtilSBCoreJson.getJsonObjectByTexto(node.toString());
+        JsonObject json = UtilCRCJson.getJsonObjectByTexto(node.toString());
         if (json.containsKey("threepids")) {
             if (!json.getJsonArray("threepids").isEmpty()) {
 

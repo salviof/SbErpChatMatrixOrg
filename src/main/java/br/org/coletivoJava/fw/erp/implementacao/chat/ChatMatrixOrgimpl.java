@@ -30,13 +30,13 @@ import br.org.coletivoJava.integracoes.restIntmatrixchat.UtilsbApiMatrixChat;
 import br.org.coletivoJava.integracoes.restIntmatrixchat.implementacao.GestaoTokenRestIntmatrixchat;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.arquivosConfiguracao.ConfigModulo;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreCriptrografia;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreJson;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringFiltros;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringSlugs;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringTelefone;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringValidador;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringsCammelCase;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCCriptrografia;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCJson;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCStringFiltros;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCStringSlugs;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCStringTelefone;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCStringValidador;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCStringsCammelCase;
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.WS.conexaoWebServiceClient.ItfRespostaWebServiceSimples;
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.token.ItfTokenGestao;
 import com.super_bits.modulosSB.SBCore.modulos.Controller.Interfaces.permissoes.ErroDadosDeContatoUsuarioNaoEncontrado;
@@ -118,9 +118,9 @@ public class ChatMatrixOrgimpl
             throw new ErroRegraDeNEgocioChat("Usuário sem telefone, senhas autogerenciadas, são apenas para usuários que acessam exclusivamente pelo whasapp");
         }
 
-        senha.append(UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(telefone));
+        senha.append(UtilCRCStringTelefone.gerarNumeroTelefoneInternacional(telefone));
         senha.append(SBCore.getConfigModulo(FabConfigApiMatrixChat.class).getPropriedade(FabConfigApiMatrixChat.SEGREDO));
-        String hashSenha = UtilSBCoreCriptrografia.getHash128HexaMD5AsString(senha.toString());
+        String hashSenha = UtilCRCCriptrografia.getHash128HexaMD5AsString(senha.toString());
         return hashSenha;
     }
 
@@ -175,9 +175,9 @@ public class ChatMatrixOrgimpl
         if (!respJson.getJsonArray("rooms").isEmpty()) {
             JsonObject jsonSala = respJson.getJsonArray("rooms").get(0).asJsonObject();
             if (respJson.getInt("total_rooms") > 0) {
-                System.out.println(UtilSBCoreJson.getTextoByJsonObjeect(jsonSala));
+                System.out.println(UtilCRCJson.getTextoByJsonObjeect(jsonSala));
                 try {
-                    ComoChatSalaBean sala = ERPChat.MATRIX_ORG.getDTO(UtilSBCoreJson.getTextoByJsonObjeect(jsonSala), ComoChatSalaBean.class);
+                    ComoChatSalaBean sala = ERPChat.MATRIX_ORG.getDTO(UtilCRCJson.getTextoByJsonObjeect(jsonSala), ComoChatSalaBean.class);
 
                     return sala;
                 } catch (ErroJsonInterpredador ex) {
@@ -228,9 +228,9 @@ public class ChatMatrixOrgimpl
         if (!respJson.getJsonArray("rooms").isEmpty()) {
             JsonObject jsonSala = respJson.getJsonArray("rooms").get(0).asJsonObject();
             if (respJson.getInt("total_rooms") > 0) {
-                System.out.println(UtilSBCoreJson.getTextoByJsonObjeect(jsonSala));
+                System.out.println(UtilCRCJson.getTextoByJsonObjeect(jsonSala));
                 try {
-                    ComoChatSalaBean sala = ERPChat.MATRIX_ORG.getDTO(UtilSBCoreJson.getTextoByJsonObjeect(jsonSala), ComoChatSalaBean.class);
+                    ComoChatSalaBean sala = ERPChat.MATRIX_ORG.getDTO(UtilCRCJson.getTextoByJsonObjeect(jsonSala), ComoChatSalaBean.class);
 
                     return sala;
                 } catch (ErroJsonInterpredador ex) {
@@ -269,7 +269,7 @@ public class ChatMatrixOrgimpl
         ItfRespostaWebServiceSimples respUltimoEvento = FabApiRestIntMatrixChatSalas.SALA_OBTER_ULTIMO_EVENTO
                 .getAcao(pCodigoSala).getResposta();
         String ultimoEvento
-                = UtilSBCoreJson.getValorApartirDoCaminho("chunk[0].event_id", respUltimoEvento.getRespostaComoObjetoJson());
+                = UtilCRCJson.getValorApartirDoCaminho("chunk[0].event_id", respUltimoEvento.getRespostaComoObjetoJson());
         ItfRespostaWebServiceSimples resp = FabApiRestIntMatrixChatSalas.SALA_MARCAR_COMO_LIDO.getAcao(pUsuarioLeitura, pCodigoSala, ultimoEvento).getResposta();
 
         return resp.isSucesso();
@@ -344,7 +344,7 @@ public class ChatMatrixOrgimpl
             JsonObjectBuilder finalBuilder = Json.createObjectBuilder(jsonPowerLevels);
             finalBuilder.add("users", usersBuilder);
 
-            return FabApiRestIntMatrixChatSalas.SALA_PERMICOES_ATUALIZAR.getAcao(pSala.getCodigoChat(), UtilSBCoreJson.getTextoByJsonObjeect(finalBuilder.build())).getResposta().isSucesso();
+            return FabApiRestIntMatrixChatSalas.SALA_PERMICOES_ATUALIZAR.getAcao(pSala.getCodigoChat(), UtilCRCJson.getTextoByJsonObjeect(finalBuilder.build())).getResposta().isSucesso();
         } catch (Throwable t) {
             return false;
         }
@@ -364,7 +364,7 @@ public class ChatMatrixOrgimpl
         TIPO_INDENTIFICACAO_SALA tipoID = null;
         ComoChatSalaBean sala = null;
 
-        if (!UtilSBCoreStringValidador.isNuloOuEmbranco(pIdentificador)) {
+        if (!UtilCRCStringValidador.isNuloOuEmbranco(pIdentificador)) {
             if (pIdentificador.startsWith("!")) {
                 tipoID = TIPO_INDENTIFICACAO_SALA.CODIGO;
             } else if (pIdentificador.startsWith("#")) {
@@ -410,7 +410,7 @@ public class ChatMatrixOrgimpl
             return pesquisaSala.get();
         }
 
-        if (UtilSBCoreStringValidador.isNuloOuEmbranco(pIdentificador)) {
+        if (UtilCRCStringValidador.isNuloOuEmbranco(pIdentificador)) {
             System.out.println("Pesquisando sala por nome" + pSalaDados.getNome());
             sala = getSalaByNome(pSalaDados.getNome());
         } else {
@@ -514,7 +514,7 @@ public class ChatMatrixOrgimpl
 
     @Override
     public ComoUsuarioChat getUsuarioByTelefone(String pTelefone) throws ErroConexaoServicoChat {
-        pTelefone = UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(pTelefone);
+        pTelefone = UtilCRCStringTelefone.gerarNumeroTelefoneInternacional(pTelefone);
         if (mapaUsuarioChatByTelefone.containsKey(pTelefone)) {
             return mapaUsuarioChatByTelefone.get(pTelefone);
         }
@@ -559,7 +559,7 @@ public class ChatMatrixOrgimpl
     }
 
     private ComoUsuarioChat registraUsuarioPorTelefone(ComoUsuarioChat pUsuario) {
-        String telefone = UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(pUsuario.getTelefone());
+        String telefone = UtilCRCStringTelefone.gerarNumeroTelefoneInternacional(pUsuario.getTelefone());
         mapaUsuarioChatByEmail.put(telefone, pUsuario);
         mapaUsuarioChatByCodigo.put(pUsuario.getCodigoUsuario(), pUsuario);
         return pUsuario;
@@ -647,7 +647,7 @@ public class ChatMatrixOrgimpl
         List<String> codigosUsuariosDesejado = new ArrayList<>();
         List<String> codigosUsuariosEstadoAtual = new ArrayList<>();
         pLista.stream()
-                .filter(usr -> !UtilSBCoreStringValidador.isNuloOuEmbranco(usr.getCodigoUsuario()))
+                .filter(usr -> !UtilCRCStringValidador.isNuloOuEmbranco(usr.getCodigoUsuario()))
                 .map(usr -> usr.getCodigoUsuario())
                 .forEach(codigosUsuariosDesejado::add);
         if (codigosUsuariosDesejado.isEmpty()) {
@@ -655,7 +655,7 @@ public class ChatMatrixOrgimpl
         }
 
         pSalaRecemAtualizada.getUsuarios().stream()
-                .filter(usr -> !UtilSBCoreStringValidador.isNuloOuEmbranco(usr.getCodigoUsuario()))
+                .filter(usr -> !UtilCRCStringValidador.isNuloOuEmbranco(usr.getCodigoUsuario()))
                 .map(usr -> usr.getCodigoUsuario())
                 .forEach(codigosUsuariosEstadoAtual::add);
 
@@ -797,7 +797,7 @@ public class ChatMatrixOrgimpl
 
             ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatUsuarios.USUARIOS_STATUS.getAcao(pCodigo).getResposta();
             if (resposta.isSucesso()) {
-                JsonObject json = UtilSBCoreJson.getJsonObjectByTexto(resposta.getRespostaTexto());
+                JsonObject json = UtilCRCJson.getJsonObjectByTexto(resposta.getRespostaTexto());
                 if (json.getString("presence").equals("online")) {
                     return true;
                 }
@@ -887,7 +887,7 @@ public class ChatMatrixOrgimpl
     public synchronized SalaChatSessaoEscutaAtiva salaAbrirSessao(ComoChatSalaBean pSala) throws ErroConexaoServicoChat {
 
         iniciarConexaoDeEscuta();
-        if (pSala == null || UtilSBCoreStringValidador.isNuloOuEmbranco(pSala.getCodigoChat())) {
+        if (pSala == null || UtilCRCStringValidador.isNuloOuEmbranco(pSala.getCodigoChat())) {
             throw new UnsupportedOperationException("Codigo da sala não enviado");
         }
         if (mapasalaSessaoAtiva.containsKey(pSala.getCodigoChat())) {
@@ -934,7 +934,7 @@ public class ChatMatrixOrgimpl
         }
 
         String codigoMensagem = pcodigoMensagem;
-        if (UtilSBCoreStringValidador.isNuloOuEmbranco(codigoMensagem)) {
+        if (UtilCRCStringValidador.isNuloOuEmbranco(codigoMensagem)) {
             codigoMensagem = String.valueOf((new Date().getTime() + pMensagem.hashCode()));
         }
         ItfRespostaWebServiceSimples resp = null;
@@ -995,7 +995,7 @@ public class ChatMatrixOrgimpl
         }
 
         String codigoMensagem = pCodigoMensagem;
-        if (UtilSBCoreStringValidador.isNuloOuEmbranco(codigoMensagem)) {
+        if (UtilCRCStringValidador.isNuloOuEmbranco(codigoMensagem)) {
             codigoMensagem = String.valueOf((new Date().getTime() + pInput.hashCode() + pUsuario.hashCode()));
         }
         String uriImagem = resp.getRespostaComoObjetoJson().getString("content_uri");
@@ -1022,7 +1022,7 @@ public class ChatMatrixOrgimpl
         }
 
         String codigoMensagem = pCodigoMensagem;
-        if (UtilSBCoreStringValidador.isNuloOuEmbranco(codigoMensagem)) {
+        if (UtilCRCStringValidador.isNuloOuEmbranco(codigoMensagem)) {
             codigoMensagem = String.valueOf((new Date().getTime() + pInput.hashCode() + pUsuario.hashCode()));
         }
         String uriImagem = resp.getRespostaComoObjetoJson().getString("content_uri");
@@ -1055,7 +1055,7 @@ public class ChatMatrixOrgimpl
         System.out.println(resp.getRespostaTexto());
 
         String codigoMensagem = pcodigoMensagem;
-        if (UtilSBCoreStringValidador.isNuloOuEmbranco(codigoMensagem)) {
+        if (UtilCRCStringValidador.isNuloOuEmbranco(codigoMensagem)) {
             codigoMensagem = String.valueOf((new Date().getTime() + pInput.hashCode() + pUsuario.hashCode()));
         }
 
@@ -1197,7 +1197,7 @@ public class ChatMatrixOrgimpl
 
                 }
 
-                if (UtilSBCoreStringValidador.isNuloOuEmbranco(codUsuario) || UtilSBCoreStringValidador.isNuloOuEmbranco(senha)) {
+                if (UtilCRCStringValidador.isNuloOuEmbranco(codUsuario) || UtilCRCStringValidador.isNuloOuEmbranco(senha)) {
                     return false;
                 }
                 gestao.setLoginNomeUsuario(codUsuario);
@@ -1236,7 +1236,7 @@ public class ChatMatrixOrgimpl
 
     @Override
     public ComoUsuarioChat usuarioAtualizar(String pCodigo, String pNome, String pEmail, String pTelefone) throws ErroConexaoServicoChat {
-        String telefone = UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(pTelefone);
+        String telefone = UtilCRCStringTelefone.gerarNumeroTelefoneInternacional(pTelefone);
         ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatUsuarios.USUARIO_ATUALIZAR.getAcao(
                 pCodigo,
                 pNome,
@@ -1345,7 +1345,7 @@ public class ChatMatrixOrgimpl
     @Override
     public String gerarCodigoUsuarioContato(String pWhatsappTelefone) throws ErroRegraDeNEgocioChat, ErroConexaoServicoChat {
 
-        String telefone = UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(pWhatsappTelefone);
+        String telefone = UtilCRCStringTelefone.gerarNumeroTelefoneInternacional(pWhatsappTelefone);
         if (telefone == null) {
             throw new ErroRegraDeNEgocioChat("O Telefone não é válido");
         }
@@ -1375,7 +1375,7 @@ public class ChatMatrixOrgimpl
 
     @Override
     public ComoUsuarioChat gerarUsuarioContato(String pNome, String pTelefoneInternacional) throws ErroConexaoServicoChat, ErroRegraDeNEgocioChat {
-        String telefoneInternacional = UtilSBCoreStringTelefone.gerarNumeroTelefoneInternacional(pTelefoneInternacional);
+        String telefoneInternacional = UtilCRCStringTelefone.gerarNumeroTelefoneInternacional(pTelefoneInternacional);
 
         //telefoneInternacional = telefoneInternacional.replace("+", "");
         if (telefoneInternacional == null) {
@@ -1429,8 +1429,8 @@ public class ChatMatrixOrgimpl
             usuariochat.setEmail(pEmail);
             String nomeOriginal = pNome;
 
-            String usuarioPart1 = UtilSBCoreStringsCammelCase.getCamelByTextoPrimeiraLetraMaiuscula(nomeOriginal);
-            usuarioPart1 = UtilSBCoreStringSlugs.gerarSlugSimples(usuarioPart1);
+            String usuarioPart1 = UtilCRCStringsCammelCase.getCamelByTextoPrimeiraLetraMaiuscula(nomeOriginal);
+            usuarioPart1 = UtilCRCStringSlugs.gerarSlugSimples(usuarioPart1);
 
             usuariochat.setApelido(usuarioPart1);
             String codigoUsuario = gerarCodigoUsuarioAtendimento(pNome, pEmail);
@@ -1444,9 +1444,9 @@ public class ChatMatrixOrgimpl
 
     private String gerarCodigoUsuario(String pIdentificadoHumano, String pIdentificadorSistema, String pTipo) {
 
-        String identificadorHumano = UtilSBCoreStringsCammelCase.getCamelCaseTextoSemAcentuacaoECaracterEspecial(pIdentificadoHumano);
-        identificadorHumano = UtilSBCoreStringFiltros.getPrimeirasXLetrasDaString(identificadorHumano, 50);
-        String identificadorSistema = UtilSBCoreStringFiltros.removeCaracteresEspeciaisAcentoMantendoApenasLetrasNumerosEspaco(pIdentificadorSistema);
+        String identificadorHumano = UtilCRCStringsCammelCase.getCamelCaseTextoSemAcentuacaoECaracterEspecial(pIdentificadoHumano);
+        identificadorHumano = UtilCRCStringFiltros.getPrimeirasXLetrasDaString(identificadorHumano, 50);
+        String identificadorSistema = UtilCRCStringFiltros.removeCaracteresEspeciaisAcentoMantendoApenasLetrasNumerosEspaco(pIdentificadorSistema);
         String codigoUsuario = UtilsbApiMatrixChat.gerarCodigoBySlugUser(identificadorHumano + "." + identificadorSistema + "." + pTipo);
         return codigoUsuario;
     }

@@ -11,7 +11,7 @@ import static br.org.coletivoJava.fw.api.erp.chat.model.FabTipoPacoteDeAcaoMatri
 import static br.org.coletivoJava.fw.api.erp.chat.model.FabTipoPacoteDeAcaoMatrix.LEITURA;
 import static br.org.coletivoJava.fw.api.erp.chat.model.FabTipoPacoteDeAcaoMatrix.MENSAGEM;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreDataHora;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCDataHora;
 import br.org.coletivoJava.fw.api.erp.chat.ErroMtxParalizacaoDeProcessamento;
 import br.org.coletivoJava.fw.api.erp.chat.model.FabTipoPacoteDeAcaoMatrix;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfEventoMatix;
@@ -41,7 +41,7 @@ public abstract class EscutaSalaMatrixAbst implements ItfListenerEventoMatrix {
     public EscutaSalaMatrixAbst(ComoChatSalaBean pSala) {
         sala = pSala;
         datainicial = new Date();
-        dataExpira = UtilSBCoreDataHora.incrementaHoras(datainicial, 24);
+        dataExpira = UtilCRCDataHora.incrementaHoras(datainicial, 24);
 
     }
 

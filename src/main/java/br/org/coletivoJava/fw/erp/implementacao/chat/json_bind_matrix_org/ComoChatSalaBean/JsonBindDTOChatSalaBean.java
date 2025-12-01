@@ -12,7 +12,7 @@ import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreJson;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCJson;
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.WS.conexaoWebServiceClient.ItfRespostaWebServiceSimples;
 import com.super_bits.modulosSB.SBCore.modulos.erp.ErroJsonInterpredador;
 import jakarta.json.JsonString;
@@ -55,7 +55,7 @@ public class JsonBindDTOChatSalaBean
             try {
                 JsonString codigoUsuario = (JsonString) us;
                 ItfRespostaWebServiceSimples respDadpsUsuario = FabApiRestIntMatrixChatUsuarios.USUARIO_OBTER_DADOS.getAcao(codigoUsuario.getString()).getResposta();
-                DTOComoUsuarioChat usuario = (DTOComoUsuarioChat) ERPChat.MATRIX_ORG.getDTO(UtilSBCoreJson.getTextoByJsonObjeect(respDadpsUsuario.getRespostaComoObjetoJson()), ComoUsuarioChat.class);
+                DTOComoUsuarioChat usuario = (DTOComoUsuarioChat) ERPChat.MATRIX_ORG.getDTO(UtilCRCJson.getTextoByJsonObjeect(respDadpsUsuario.getRespostaComoObjetoJson()), ComoUsuarioChat.class);
                 usuarios.add(usuario);
             } catch (ErroJsonInterpredador ex) {
                 SBCore.RelatarErro(FabErro.SOLICITAR_REPARO, "Falha processando json de usuaŕio", ex);

@@ -9,8 +9,8 @@ import br.org.coletivoJava.integracoes.restIntmatrixchat.UtilsbApiMatrixChat;
 import com.google.common.collect.Lists;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.arquivosConfiguracao.ConfigModulo;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringSlugs;
-import com.super_bits.modulosSB.SBCore.UtilGeral.UtilSBCoreStringValidador;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCStringSlugs;
+import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCStringValidador;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ComoEntidadeSimplesSomenteLeitura;
 import java.util.List;
 import org.coletivojava.fw.api.tratamentoErros.ErroPreparandoObjeto;
@@ -36,7 +36,7 @@ public class UtilMatrixERP {
     }
 
     public static String gerarSlugUsuario(ComoUsuarioChat pusuario) {
-        String nome = UtilSBCoreStringSlugs.gerarSlugCaixaAlta(pusuario.getNome()).toLowerCase();
+        String nome = UtilCRCStringSlugs.gerarSlugCaixaAlta(pusuario.getNome()).toLowerCase();
         String codigo = String.valueOf(pusuario.getEmail().hashCode()).replace("-", "0").substring(0, 3);
         return nome + codigo;
     }
@@ -49,8 +49,8 @@ public class UtilMatrixERP {
     public static String gerarAliasSalaIDCanonico(String pNomeCurtoAlias) {
 
         String dominioFederado = SBCore.getConfigModulo(FabConfigApiMatrixChat.class).getPropriedade(FabConfigApiMatrixChat.DOMINIO_FEDERADO);
-        String normalizacaoSlug = UtilSBCoreStringSlugs.gerarSlugSimplesForcandoMaiusculoAposEspaco(pNomeCurtoAlias);
-        normalizacaoSlug = UtilSBCoreStringSlugs.gerarSlugCaixaAltaByCammelCase(normalizacaoSlug).toLowerCase();
+        String normalizacaoSlug = UtilCRCStringSlugs.gerarSlugSimplesForcandoMaiusculoAposEspaco(pNomeCurtoAlias);
+        normalizacaoSlug = UtilCRCStringSlugs.gerarSlugCaixaAltaByCammelCase(normalizacaoSlug).toLowerCase();
         return "#" + normalizacaoSlug + ":" + dominioFederado;
 
     }
@@ -63,7 +63,7 @@ public class UtilMatrixERP {
     }
 
     public static String gerarAliasSalaIDCanonicoUsuarioWhatsapp(ComoUsuarioChat pUsuarioExternoWhatsapp, String pSlugCanalComunicacao) {
-        if (UtilSBCoreStringValidador.isNuloOuEmbranco(pUsuarioExternoWhatsapp.getTelefone()) && !UtilSBCoreStringValidador.isNuloOuEmbranco(pUsuarioExternoWhatsapp.getEmail())) {
+        if (UtilCRCStringValidador.isNuloOuEmbranco(pUsuarioExternoWhatsapp.getTelefone()) && !UtilCRCStringValidador.isNuloOuEmbranco(pUsuarioExternoWhatsapp.getEmail())) {
             throw new UnsupportedOperationException("O Usuário enviado não parece ser do tipo usuário lead, pois um e-mail relacionado foi encontrado");
         }
         return gerarAliasSalaIDCanonico(pUsuarioExternoWhatsapp.getTelefone() + pSlugCanalComunicacao);
