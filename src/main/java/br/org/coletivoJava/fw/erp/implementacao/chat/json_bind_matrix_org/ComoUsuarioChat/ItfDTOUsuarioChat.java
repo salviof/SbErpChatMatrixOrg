@@ -3,11 +3,11 @@ package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ComoU
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.erp.dto.ItfDTOSBJSON;
 import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ComoGrupoUsuario;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.entidade.basico.ComoGrupoUsuario;
 import java.lang.String;
 import java.util.List;
 import java.util.Date;
-import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.cep.ComoLocalPostagem;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.entidade.basico.cep.ComoLocalPostagem;
 
 @JsonDeserialize(using = JsonBindDTOUsuarioChat.class)
 public interface ItfDTOUsuarioChat extends ItfDTOSBJSON, ComoUsuarioChat {

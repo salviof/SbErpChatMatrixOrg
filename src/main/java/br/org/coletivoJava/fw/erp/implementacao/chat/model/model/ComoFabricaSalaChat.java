@@ -6,7 +6,7 @@ package br.org.coletivoJava.fw.erp.implementacao.chat.model.model;
 
 import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import com.google.common.collect.Lists;
-import com.super_bits.modulosSB.SBCore.modulos.objetos.registro.Interfaces.basico.ComoEntidadeSimplesSomenteLeitura;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.entidade.basico.ComoEntidadeSimplesSomenteLeitura;
 import java.util.List;
 import org.coletivojava.fw.api.tratamentoErros.ErroPreparandoObjeto;
 
