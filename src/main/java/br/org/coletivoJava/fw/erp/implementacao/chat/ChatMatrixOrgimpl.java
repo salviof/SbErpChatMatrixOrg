@@ -586,20 +586,25 @@ public class ChatMatrixOrgimpl
 
             }
         }
-        String userId = resposta.getRespostaComoObjetoJson().getString("user_id");
-        ItfRespostaWebServiceSimples respostaUser = FabApiRestIntMatrixChatUsuarios.USUARIO_OBTER_DADOS.getAcao(userId).getResposta();
-        System.out.println("processando:");
-        System.out.println(respostaUser.getRespostaTexto());
-        try {
-            ComoUsuarioChat usuario = ERPChat.MATRIX_ORG.getDTO(respostaUser.getRespostaTexto(), ComoUsuarioChat.class);
-            System.out.println("DTO gerado com sucesso");
-            return registraUsuarioPorEmail(usuario);
 
-        } catch (ErroJsonInterpredador ex) {
-            System.out.println("Falha processando usuário" + ex.getMessage());
-            SBCore.RelatarErro(FabErro.SOLICITAR_REPARO, "Falha processando usuário" + ex.getMessage(), ex);
-            return null;
+        resposta = FabApiRestIntMatrixChatUsuarios.USUARIO_OBTER_DADOS_BY_EMAIL.getAcao(pEmail).getResposta();
+
+        if (resposta.isSucesso()) {
+            String userId = resposta.getRespostaComoObjetoJson().getString("user_id");
+            ItfRespostaWebServiceSimples respostaUser = FabApiRestIntMatrixChatUsuarios.USUARIO_OBTER_DADOS.getAcao(userId).getResposta();
+            System.out.println(respostaUser.getRespostaTexto());
+            try {
+                ComoUsuarioChat usuario = ERPChat.MATRIX_ORG.getDTO(respostaUser.getRespostaTexto(), ComoUsuarioChat.class);
+                System.out.println("DTO gerado com sucesso");
+                return registraUsuarioPorEmail(usuario);
+
+            } catch (ErroJsonInterpredador ex) {
+                System.out.println("Falha processando usuário" + ex.getMessage());
+                SBCore.RelatarErro(FabErro.SOLICITAR_REPARO, "Falha processando usuário" + ex.getMessage(), ex);
+                return null;
+            }
         }
+        return null;
     }
 
     @Override
@@ -1422,6 +1427,12 @@ public class ChatMatrixOrgimpl
     @Override
     public ComoUsuarioChat gerarUsuarioAtendimento(String pNome, String pEmail) throws ErroConexaoServicoChat, ErroRegraDeNEgocioChat {
         ComoUsuarioChat usuario = getUsuarioByEmail(pEmail);
+        if (pNome == null || pEmail == null || pNome.isEmpty() || pEmail.isEmpty()) {
+            throw new ErroRegraDeNEgocioChat("O nome e email são obrigatórios para criação de usuários de atendimento");
+        }
+        if (pEmail.contains("@")) {
+            throw new ErroRegraDeNEgocioChat("e-mail não é válido");
+        }
         if (usuario == null) {
 
             UsuarioChatMatrixOrg usuariochat = new UsuarioChatMatrixOrg();
