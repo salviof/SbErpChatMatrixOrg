@@ -176,6 +176,24 @@ public enum FabTipoSalaMatrix implements ComoFabricaSalaChat {
 
     }
 
+    public boolean isUmaSalaDeWhatsapp() {
+        switch (this) {
+
+            case WTZAP_ATENDIMENTO:
+            case WTZAP_VENDAS:
+                return true;
+            case WTZAP_ATENDIMENTO_GRUPO_CLIENTE:
+            case MATRIX_CHAT_VENDAS:
+            case MATRIX_CHAT_ATENDIMENTO:
+            case MATRIX_CHAT_ATENDIMENTO_CHAMADO:
+            case MATRIX_CHAT_DEBATE_INTERNO_LEAD_CLIENTE:
+            case CHAT_DINAMICO_DE_ENTIDADE:
+                return false;
+            default:
+                throw new AssertionError();
+        }
+    }
+
     @Override
     public SalaMatrxOrg getSalaMatrix(ComoEntidadeSimplesSomenteLeitura pBeanVinculado,
             ComoUsuarioChat pUsuarioDono,
@@ -188,7 +206,24 @@ public enum FabTipoSalaMatrix implements ComoFabricaSalaChat {
 
         SalaMatrxOrg novaSala = new SalaMatrxOrg();
         ComoUsuarioChat usuarioContatoPrincipal = null;
+
         try {
+            if (isUmaSalaDeWhatsapp()) {
+                if (pUsuarioContatos == null || pUsuarioContatos.isEmpty()) {
+                    throw new UnsupportedOperationException("Pelomenos um usuário de contato é obrigatorio");
+                }
+                novaSala.setUsuariosExternos(pUsuarioContatos);
+                if (pUsuarioContatos != null && !pUsuarioContatos.isEmpty()) {
+                    usuarioContatoPrincipal = pUsuarioContatos.get(0);
+                }
+                if (pUsuarioContatos.get(0).getTelefone() == null || pUsuarioContatos.get(0).getTelefone().isEmpty()) {
+                    throw new ErroPreparandoObjeto(pBeanVinculado, "O telefone do usuário externo não pode ser nulo");
+                }
+                if (pUsuariosAtendimento.isEmpty() && pUsuarioDono == null) {
+                    throw new UnsupportedOperationException("Pelomenos um usuário de atendimento é obrigatorio");
+                }
+            }
+
             if (isChatAtendimentoDeContato()) {
 
                 if (pUsuarioContatos == null || pUsuarioContatos.isEmpty()) {
@@ -201,11 +236,9 @@ public enum FabTipoSalaMatrix implements ComoFabricaSalaChat {
                 if (pUsuarioContatos.get(0).getTelefone() == null || pUsuarioContatos.get(0).getTelefone().isEmpty()) {
                     throw new ErroPreparandoObjeto(pBeanVinculado, "O telefone do usuário externo não pode ser nulo");
                 }
+
             }
 
-            if (pUsuariosAtendimento.isEmpty()) {
-                throw new UnsupportedOperationException("Pelomenos um usuário de atendimento é obrigatorio");
-            }
         } catch (Throwable t) {
             SBCore.RelatarErroAoUsuario(FabErro.SOLICITAR_REPARO, "Falha criando sala matrix ideal" + t.getMessage(), t);
             if (pBeanVinculado != null) {
@@ -214,9 +247,10 @@ public enum FabTipoSalaMatrix implements ComoFabricaSalaChat {
                 throw new ErroPreparandoObjeto(novaSala, t);
             }
         }
-
-        if (pUsuariosAtendimento.get(0).getEmail() == null || pUsuariosAtendimento.get(0).getEmail().isEmpty()) {
-            throw new ErroPreparandoObjeto(pBeanVinculado, "O email do usuário interno não pode ser nulo");
+        if (!pUsuariosAtendimento.isEmpty()) {
+            if (pUsuariosAtendimento.get(0).getEmail() == null || pUsuariosAtendimento.get(0).getEmail().isEmpty()) {
+                throw new ErroPreparandoObjeto(pBeanVinculado, "O email do usuário interno não pode ser nulo");
+            }
         }
 
         novaSala.setUsuariosDaEmpresa(pUsuariosAtendimento);

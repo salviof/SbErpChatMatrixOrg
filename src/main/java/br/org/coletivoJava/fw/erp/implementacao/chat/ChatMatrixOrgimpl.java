@@ -9,7 +9,6 @@ import br.org.coletivoJava.fw.api.erp.chat.ItfErpChatService;
 import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfNotificacaoUsuarioChat;
 import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
-import br.org.coletivoJava.fw.api.erp.chat.notificacoes.ItfRetornoDeChamadaDeNotificacao;
 import br.org.coletivoJava.fw.api.erp.chat.notificacoes.SincronizacaoNotificacoes;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.FabTipoSalaMatrix;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.RespostaSalaApiEscuta;
@@ -57,6 +56,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Singleton;
@@ -71,9 +72,14 @@ import org.coletivojava.fw.api.tratamentoErros.FabErro;
 public class ChatMatrixOrgimpl
         implements ItfErpChatService {
 
-    private static Map<String, ComoUsuarioChat> mapaUsuarioChatByEmail = new HashMap<>();
-    private static Map<String, ComoUsuarioChat> mapaUsuarioChatByTelefone = new HashMap<>();
-    private static Map<String, ComoUsuarioChat> mapaUsuarioChatByCodigo = new HashMap<>();
+    private static Map<String, ComoUsuarioChat> mapaUsuarioChatByEmail = new ConcurrentHashMap<>();
+    private static Map<String, ComoUsuarioChat> mapaUsuarioChatByTelefone = new ConcurrentHashMap<>();
+    private static Map<String, ComoUsuarioChat> mapaUsuarioChatByCodigo = new ConcurrentHashMap<>();
+
+    private static Map<String, ComoChatSalaBean> MAPA_SALA_POR_CODIGO = new ConcurrentHashMap<>();
+    private static Map<String, String> MAPA_SALA_POR_APELIDO = new ConcurrentHashMap<>();
+    private static final ConcurrentLinkedQueue<String> ORDEM_SALAS = new ConcurrentLinkedQueue<>();
+
     private static Map<String, SalaChatSessaoEscutaAtiva> mapasalaSessaoAtiva = new HashMap<>();
     private static Class classeEscutaSalas;
     private static Class classeEscutaNotificacao;
@@ -157,6 +163,13 @@ public class ChatMatrixOrgimpl
         if (!tokenEcontrarById.isTemTokemAtivo()) {
             tokenEcontrarById.gerarNovoToken();
         }
+
+        if (MAPA_SALA_POR_APELIDO.containsKey(pAlias)) {
+            if (MAPA_SALA_POR_CODIGO.containsKey(MAPA_SALA_POR_APELIDO.get(pAlias))) {
+                return MAPA_SALA_POR_CODIGO.get(MAPA_SALA_POR_APELIDO.get(pAlias));
+            }
+        }
+
         ItfRespostaWebServiceSimples respostaBuscaPeloAlias = FabApiRestIntMatrixChatSalas.SALA_ENCONTRAR_POR_ALIAS.getAcao(pAlias).getResposta();
         //{"room_id":"!sysqUVrbhFXRcPuBcH:casanovadigital.com.br","servers":["casanovadigital.com.br"]}
         //{"errcode":"M_NOT_FOUND","error":"Room alias #APELIDO_APENAS_TEST:casanovadigital.com.br not found"}
@@ -164,7 +177,14 @@ public class ChatMatrixOrgimpl
             return null;
         }
         String roomId = respostaBuscaPeloAlias.getRespostaComoObjetoJson().getString("room_id");
-        return getSalaByCodigo(roomId);
+
+        ComoChatSalaBean sala = getSalaByCodigo(roomId);
+        if (sala != null) {
+            MAPA_SALA_POR_APELIDO.put(pAlias, sala.getCodigoChat());
+            registrarSala(sala.getCodigoChat(), sala);
+            return sala;
+        }
+        return null;
     }
 
     @Override
@@ -221,7 +241,10 @@ public class ChatMatrixOrgimpl
         if (!pCodigoSala.startsWith("!")) {
             return null;
         }
-
+        if (MAPA_SALA_POR_CODIGO.containsKey(pCodigoSala)) {
+            registrarSala(pCodigoSala, MAPA_SALA_POR_CODIGO.get(pCodigoSala));
+            return MAPA_SALA_POR_CODIGO.get(pCodigoSala);
+        }
         ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatSalas.SALA_ENCONTRAR_POR_ID.getAcao(pCodigoSala).getResposta();
 
         JsonObject respJson = resposta.getRespostaComoObjetoJson();
@@ -231,7 +254,20 @@ public class ChatMatrixOrgimpl
                 System.out.println(UtilCRCJson.getTextoByJsonObjeect(jsonSala));
                 try {
                     ComoChatSalaBean sala = ERPChat.MATRIX_ORG.getDTO(UtilCRCJson.getTextoByJsonObjeect(jsonSala), ComoChatSalaBean.class);
+                    //validando Permissoes, se encontrar divergencia, exclui a sala e retorna nulo
+                    ItfRespostaWebServiceSimples respostaPermicao = FabApiRestIntMatrixChatSalas.SALA_PERMICOES_VISUALIZAR
+                            .getAcao(sala.getCodigoChat())
+                            .getResposta();
 
+                    JsonObject original = respostaPermicao.getRespostaComoObjetoJson();
+                    JsonObject usersAtual = original.getJsonObject("users");
+                    boolean temUsuarioComPermissaoInadequada = usersAtual.keySet().stream().filter(usr -> !usr.equals(getCodigoUsuarioAdmin()))
+                            .filter(usrNormal -> usersAtual.getInt(usrNormal) >= 100).findFirst().isPresent();
+                    if (temUsuarioComPermissaoInadequada) {
+                        salaExcluir(sala);
+                        return null;
+                    }
+                    registrarSala(sala.getCodigoChat(), sala);
                     return sala;
                 } catch (ErroJsonInterpredador ex) {
                     SBCore.RelatarErro(FabErro.SOLICITAR_REPARO, "Falha interpretando Json", ex);
@@ -302,6 +338,12 @@ public class ChatMatrixOrgimpl
         if (pUsuarioAtendimento == null) {
             return false;
         }
+
+        if (pUsuarioAtendimento.getEmail() != null) {
+            if (pUsuarioAtendimento.getEmail().equals(FabConfigApiMatrixChat.USUARIO_ADMIN.getValorParametroSistema())) {
+                return false;
+            }
+        }
         if (pUsuarioAtendimento.getEmail() != null && pUsuarioAtendimento.getEmail().contains("@")) {
 
             if (pUsuarioAtendimento.getEmail().split("@")[1].endsWith(FabConfigApiMatrixChat.DOMINIO_FEDERADO.getValorParametroSistema())) {
@@ -332,22 +374,72 @@ public class ChatMatrixOrgimpl
     @Override
     public boolean salaTornarMembroAdmin(ComoChatSalaBean pSala, String pCodigoMembro) throws ErroConexaoServicoChat {
         try {
-            ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatSalas.SALA_PERMICOES_VISUALIZAR.getAcao(pSala.getCodigoChat()).getResposta();
-            JsonObject jsonPowerLevels = resposta.getRespostaComoObjetoJson();
-            // --- editar a chave "users" adicionando um novo usuário ---
-            JsonObjectBuilder usersBuilder = Json.createObjectBuilder(
-                    jsonPowerLevels.getJsonObject("users")
-            );
-            usersBuilder.add(pCodigoMembro, 100);
+            // Busca configuração atual completa
+            ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatSalas.SALA_PERMICOES_VISUALIZAR
+                    .getAcao(pSala.getCodigoChat())
+                    .getResposta();
 
-            // reconstruir o objeto final, copiando os campos antigos e substituindo "users"
-            JsonObjectBuilder finalBuilder = Json.createObjectBuilder(jsonPowerLevels);
-            finalBuilder.add("users", usersBuilder);
+            JsonObject original = resposta.getRespostaComoObjetoJson();
+            JsonObject usersAtual = original.getJsonObject("users");
+            System.out.println(UtilCRCJson.getTextoByJsonObjeect(original));
+            String codigoAdmin = getCodigoUsuarioAdmin();
+            if (codigoAdmin.equals(pCodigoMembro)) {
+                ItfRespostaWebServiceSimples respostaDefinirAdmin = FabApiRestIntMatrixChatSalas.SALA_ADMIN_DEFINIR.getAcao(pSala.getCodigoChat(), pCodigoMembro).getResposta();
+                System.out.println(respostaDefinirAdmin.getRespostaTexto());
+            }
+            int niveldeAcesso = 100;
 
-            return FabApiRestIntMatrixChatSalas.SALA_PERMICOES_ATUALIZAR.getAcao(pSala.getCodigoChat(), UtilCRCJson.getTextoByJsonObjeect(finalBuilder.build())).getResposta().isSucesso();
+            // Define power level do Admin
+            // ====================== Monta novo "users" ======================
+            JsonObjectBuilder usersBuilder = Json.createObjectBuilder();
+
+            usersBuilder.add(codigoAdmin, niveldeAcesso);
+
+            // Downgrade de todos os outros usuários para 99
+            if (usersAtual != null) {
+                for (String codUsuarioDaSala : usersAtual.keySet()) {
+                    if (codUsuarioDaSala.equals(pCodigoMembro)) {
+                        if (codUsuarioDaSala.equals(codigoAdmin)) {
+                            usersBuilder.add(codUsuarioDaSala, 100);
+                        } else {
+                            usersBuilder.add(codUsuarioDaSala, 99);
+                        }
+                    } else {
+                        if (codUsuarioDaSala.equals(codigoAdmin)) {
+                            usersBuilder.add(codUsuarioDaSala, 100);
+                        } else {
+
+                            usersBuilder.add(codUsuarioDaSala, 40);
+
+                        }
+                    }
+
+                }
+            }
+
+            // ====================== Reconstrói mantendo TUDO original ======================
+            JsonObjectBuilder finalBuilder = Json.createObjectBuilder(original);  // Reaproveita tudo
+            finalBuilder.add("users", usersBuilder.build());                     // Só sobrescreve "users"
+
+            // Envia
+            String jsonAtualizado = UtilCRCJson.getTextoByJsonObjeect(finalBuilder.build());
+
+            ItfRespostaWebServiceSimples resp = FabApiRestIntMatrixChatSalas.SALA_PERMICOES_ATUALIZAR
+                    .getAcao(pSala.getCodigoChat(), jsonAtualizado)
+                    .getResposta();
+
+            return resp.isSucesso();
+
         } catch (Throwable t) {
+            t.printStackTrace();
             return false;
         }
+    }
+
+    @Override
+    public ComoChatSalaBean getSalaRenomear(ComoChatSalaBean pSala, String pNovoNome) throws ErroConexaoServicoChat {
+        FabApiRestIntMatrixChatSalas.SALA_RENOMEAR.getAcao(pSala.getCodigoChat(), pNovoNome);
+        return getSalaAtualizada(pSala);
     }
 
     enum TIPO_INDENTIFICACAO_SALA {
@@ -560,7 +652,7 @@ public class ChatMatrixOrgimpl
 
     private ComoUsuarioChat registraUsuarioPorTelefone(ComoUsuarioChat pUsuario) {
         String telefone = UtilCRCStringTelefone.gerarNumeroTelefoneInternacional(pUsuario.getTelefone());
-        mapaUsuarioChatByEmail.put(telefone, pUsuario);
+        mapaUsuarioChatByTelefone.put(telefone, pUsuario);
         mapaUsuarioChatByCodigo.put(pUsuario.getCodigoUsuario(), pUsuario);
         return pUsuario;
     }
@@ -708,11 +800,27 @@ public class ChatMatrixOrgimpl
             if (!pSala.getUsuarios().stream().filter(usr -> usr.getCodigoUsuario().equals(codigoAdmin)).findFirst().isPresent()) {
                 salaAdicionarMembro(pSala, getCodigoUsuarioAdmin());
             }
-            ItfRespostaWebServiceSimples resp = FabApiRestIntMatrixChatSalas.SALA_REMOVER_USUARIO.getAcao(pSala.getCodigoChat(), pCodigoMembro).getResposta();
 
+            ItfRespostaWebServiceSimples resp = FabApiRestIntMatrixChatSalas.SALA_REMOVER_USUARIO.getAcao(pSala.getCodigoChat(), pCodigoMembro).getResposta();
+            if (!resp.isSucesso()) {
+
+                if (resp.getRespostaComoObjetoJson().containsKey("error")) {
+                    if (resp.getRespostaComoObjetoJson().containsKey("errcode")) {
+                        if (resp.getRespostaComoObjetoJson().getString("errcode").equals("M_FORBIDDEN")) {
+
+                            salaTornarMembroAdmin(pSala, getUsuarioAdmin().getCodigoUsuario());
+                            resp = FabApiRestIntMatrixChatSalas.SALA_REMOVER_USUARIO.getAcao(pSala.getCodigoChat(), pCodigoMembro).getResposta();
+                        }
+                    }
+                }
+            }
             return resp.isSucesso();
+        } catch (ErroConexaoServicoChat t) {
+            throw t;
+
         } catch (Throwable t) {
-            throw new ErroConexaoServicoChat("Falha removendo membro da sala " + pSala + " Codigo membro " + pCodigoMembro);
+            SBCore.RelatarErro(FabErro.SOLICITAR_REPARO, "Falha removendo membro", t);
+            return false;
         }
     }
 
@@ -737,8 +845,51 @@ public class ChatMatrixOrgimpl
         return usuario;
     }
 
+    private void registrarSala(String idSala, ComoChatSalaBean sala) {
+
+        boolean jaExistia = MAPA_SALA_POR_CODIGO.containsKey(idSala);
+
+        // Atualiza (ou insere) a sala
+        MAPA_SALA_POR_CODIGO.put(idSala, sala);
+
+        if (jaExistia) {
+            // Move para o final da fila (mais recente)
+            ORDEM_SALAS.remove(idSala);      // remove a posição antiga
+            ORDEM_SALAS.offer(idSala);       // coloca no final
+        } else {
+            // Sala nova
+            ORDEM_SALAS.offer(idSala);
+
+            // Remove as mais antigas se exceder o limite
+            while (MAPA_SALA_POR_CODIGO.size() > 30) {
+                String idMaisAntiga = ORDEM_SALAS.poll();
+                if (idMaisAntiga != null) {
+                    MAPA_SALA_POR_CODIGO.remove(idMaisAntiga);
+                }
+            }
+        }
+
+    }
+
+    private void removerSalaMemoria(String idSala) {
+        if (idSala == null) {
+            return;
+        }
+
+        if (MAPA_SALA_POR_CODIGO.containsKey(idSala)) {
+            ORDEM_SALAS.remove(idSala);
+        }
+
+    }
+
     @Override
     public ComoChatSalaBean getSalaAtualizada(ComoChatSalaBean pSala) throws ErroConexaoServicoChat {
+        if (pSala == null) {
+            return pSala;
+        }
+        if (pSala.getCodigoChat() != null) {
+            removerSalaMemoria(pSala.getCodigoChat());
+        }
         return getSalaByCodigo(pSala.getCodigoChat());
     }
 
