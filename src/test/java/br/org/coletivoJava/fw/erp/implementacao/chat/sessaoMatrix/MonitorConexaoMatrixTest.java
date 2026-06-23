@@ -10,7 +10,6 @@ import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
 import br.org.coletivoJava.fw.erp.implementacao.chat.ChatMatrixOrgimpl;
 import br.org.coletivoJava.fw.erp.implementacao.chat.ListenerDaSalaExemplo;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.SalaChatSessaoEscutaAtiva;
-import br.org.coletivoJava.integracoes.matrixChat.config.FabConfigApiMatrixChat;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
 import de.jojii.matrixclientserver.File.Files;
 import java.io.File;

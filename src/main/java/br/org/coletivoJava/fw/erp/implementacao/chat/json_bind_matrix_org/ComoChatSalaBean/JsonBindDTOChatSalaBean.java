@@ -2,8 +2,8 @@ package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ComoC
 
 import br.org.coletivoJava.fw.api.erp.chat.ERPChat;
 import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
-import br.org.coletivoJava.fw.erp.implementacao.chat.UtilMatrixERP;
 import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ComoUsuarioChat.DTOComoUsuarioChat;
+import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.SalaMatrxOrg;
 import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.erp.dto.DTO_SB_JSON_PROCESSADOR_GENERICO;
 import br.org.coletivoJava.integracoes.matrixChat.FabApiRestIntMatrixChatUsuarios;
 import com.fasterxml.jackson.core.JacksonException;
@@ -31,9 +31,11 @@ public class JsonBindDTOChatSalaBean
 
     @Override
     public DTOComoChatSalaBean deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JacksonException {
+
         ObjectCodec codec = jp.getCodec();
         JsonNode node = codec.readTree(jp);
         DTOComoChatSalaBean dto = new DTOComoChatSalaBean();
+        adicionarPropriedadeString("nomeEntidadePadrao", node, SalaMatrxOrg.class.getSimpleName());
         adicionarPropriedadeInteiro("id", node, "room_id");
         adicionarPropriedadeString("codigoChat", node, "room_id");
         adicionarPropriedadeString("nome", node, "name");

@@ -8,6 +8,7 @@ package br.org.coletivoJava.testes.erp;
 import br.org.coletivoJava.fw.api.erp.chat.ERPChat;
 import br.org.coletivoJava.fw.api.erp.codigoPostal.br.ERPCodigoPostalBR;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
+import com.super_bits.modulosSB.SBCore.modulos.erp.FabTipoAgenteOrganizacao;
 import org.apache.logging.log4j.LogManager;
 import org.coletivojava.fw.api.objetoNativo.log.LogPadraoSB;
 import org.junit.Test;
