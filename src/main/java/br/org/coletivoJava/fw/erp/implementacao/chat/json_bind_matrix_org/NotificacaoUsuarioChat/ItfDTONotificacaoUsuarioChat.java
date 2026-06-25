@@ -1,16 +1,16 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.NotificacaoUsuarioChat;
 
-import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.erp.dto.ItfDTOSBJSON;
 import br.org.coletivoJava.fw.api.erp.chat.model.ItfNotificacaoUsuarioChat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.NotificacaoUsuarioChat.JsonBindDTONotificacaoUsuarioChat;
 import java.lang.String;
 import java.lang.Long;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.dto.ComoDTOCaramelo;
 
 @JsonDeserialize(using = JsonBindDTONotificacaoUsuarioChat.class)
 public interface ItfDTONotificacaoUsuarioChat
         extends
-        ItfDTOSBJSON,
+        ComoDTOCaramelo,
         ItfNotificacaoUsuarioChat {
 
     @Override

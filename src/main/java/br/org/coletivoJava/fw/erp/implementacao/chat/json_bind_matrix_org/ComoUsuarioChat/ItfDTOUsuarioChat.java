@@ -1,6 +1,5 @@
 package br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.ComoUsuarioChat;
 
-import com.super_bits.modulosSB.SBCore.integracao.libRestClient.api.erp.dto.ItfDTOSBJSON;
 import br.org.coletivoJava.fw.api.erp.chat.model.ComoUsuarioChat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.entidade.basico.ComoGrupoUsuario;
@@ -8,9 +7,10 @@ import java.lang.String;
 import java.util.List;
 import java.util.Date;
 import com.super_bits.modulosSB.SBCore.modulos.objetos.entidade.basico.cep.ComoLocalPostagem;
+import com.super_bits.modulosSB.SBCore.modulos.objetos.dto.ComoDTOCaramelo;
 
 @JsonDeserialize(using = JsonBindDTOUsuarioChat.class)
-public interface ItfDTOUsuarioChat extends ItfDTOSBJSON, ComoUsuarioChat {
+public interface ItfDTOUsuarioChat extends ComoDTOCaramelo, ComoUsuarioChat {
 
     @Override
     public default String getCodigoUsuario() {
