@@ -280,6 +280,8 @@ public class ChatMatrixOrgimplTest extends TesteJunit {
         ChatMatrixOrgimpl chatMatrixService = new ChatMatrixOrgimpl();
         String codigoContato;
         try {
+            //chatMatrixService.getSalaByAlias(salaTesteID)
+
             codigoContato = chatMatrixService.gerarCodigoUsuarioContato("31984178110");
             System.out.println(codigoContato);
         } catch (ErroRegraDeNEgocioChat | ErroConexaoServicoChat ex) {

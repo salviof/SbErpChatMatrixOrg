@@ -261,11 +261,20 @@ public class ChatMatrixOrgimpl
 
                     JsonObject original = respostaPermicao.getRespostaComoObjetoJson();
                     JsonObject usersAtual = original.getJsonObject("users");
-                    boolean temUsuarioComPermissaoInadequada = usersAtual.keySet().stream().filter(usr -> !usr.equals(getCodigoUsuarioAdmin()))
-                            .filter(usrNormal -> usersAtual.getInt(usrNormal) >= 100).findFirst().isPresent();
-                    if (temUsuarioComPermissaoInadequada) {
-                        salaExcluir(sala);
-                        return null;
+
+                    boolean temUsuarioComPermissaoInadequada = false;
+                    if (!original.containsKey("error")) {
+                        temUsuarioComPermissaoInadequada = usersAtual.keySet().stream().filter(usr -> !usr.equals(getCodigoUsuarioAdmin()))
+                                .filter(usrNormal -> usersAtual.getInt(usrNormal) >= 100).findFirst().isPresent();
+                        if (temUsuarioComPermissaoInadequada) {
+                            salaExcluir(sala);
+                            return null;
+                        }
+                    } else {
+                        if (original.getString("errcode").equals("M_FORBIDDEN")) {
+                            salaExcluir(sala);
+                            return null;
+                        }
                     }
                     registrarSala(sala.getCodigoChat(), sala);
                     return sala;
@@ -591,11 +600,39 @@ public class ChatMatrixOrgimpl
     }
 
     @Override
-    public boolean salaExcluir(ComoChatSalaBean pCodigoSalsa) throws ErroConexaoServicoChat {
+    public boolean salaExcluir(ComoChatSalaBean pSala) throws ErroConexaoServicoChat {
         if (!isTemChaveValida()) {
             return false;
         }
-        ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatSalas.SALA_EXLUIR.getAcao(pCodigoSalsa.getCodigoChat()).getResposta();
+        ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatSalas.SALA_EXLUIR.getAcao(pSala.getCodigoChat()).getResposta();
+        if (resposta.isSucesso()) {
+            String pCodigoExlusao = resposta.getRespostaComoObjetoJson().getString("delete_id");
+
+            boolean excluzaofinalizada = false;
+
+            while (!excluzaofinalizada) {
+
+                ItfRespostaWebServiceSimples respostaStatus = FabApiRestIntMatrixChatSalas.SALA_EXCLUSAO_STATUS.getAcao(pCodigoExlusao).getResposta();
+                if (!respostaStatus.isSucesso()) {
+                    throw new ErroConexaoServicoChat("FAlha consultando status da exclusão");
+                }
+                String status = respostaStatus.getRespostaComoObjetoJson().getString("status");
+                if (status.equals("failed")) {
+                    throw new ErroConexaoServicoChat(respostaStatus.getRespostaComoObjetoJson().getString("error"));
+                }
+                if (status.equals("complete")) {
+                    removerSalaMemoria(pSala.getCodigoChat());
+                    return true;
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ChatMatrixOrgimpl.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+            }
+
+        }
         return resposta.isSucesso();
     }
 
@@ -877,6 +914,7 @@ public class ChatMatrixOrgimpl
         }
 
         if (MAPA_SALA_POR_CODIGO.containsKey(idSala)) {
+            MAPA_SALA_POR_CODIGO.remove(idSala);
             ORDEM_SALAS.remove(idSala);
         }
 
