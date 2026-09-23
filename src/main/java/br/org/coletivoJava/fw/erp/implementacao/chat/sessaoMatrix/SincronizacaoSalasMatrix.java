@@ -19,7 +19,9 @@ public class SincronizacaoSalasMatrix extends SincronizacaoAbstrata {
             + "    \"content\",\n"
             + "    \"sender\",\n"
             + "    \"room_id\",\n"
-            + "    \"event_id\"\n"
+            + "    \"event_id\",\n"
+            // usado para medir a idade do evento na regra do primeiro /sync fora de produção
+            + "    \"origin_server_ts\"\n"
             + "  ],\n"
             + "\"presence\": {\n"
             + "    \"types\": []\n"

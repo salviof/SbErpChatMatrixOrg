@@ -27,8 +27,10 @@ import br.org.coletivoJava.integracoes.matrixChat.FabApiRestMatrixNotificacoes;
 import br.org.coletivoJava.integracoes.matrixChat.config.FabConfigApiMatrixChat;
 import br.org.coletivoJava.integracoes.restIntmatrixchat.UtilsbApiMatrixChat;
 import br.org.coletivoJava.integracoes.restIntmatrixchat.implementacao.GestaoTokenRestIntmatrixchat;
+import com.super_bits.modulosSB.SBCore.ConfigGeral.CarameloCode;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.SBCore;
 import com.super_bits.modulosSB.SBCore.ConfigGeral.arquivosConfiguracao.ConfigModulo;
+import com.super_bits.modulosSB.SBCore.modulos.Mensagens.FabMensagens;
 import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCCriptrografia;
 import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCJson;
 import com.super_bits.modulosSB.SBCore.UtilGeral.UtilCRCStringFiltros;
@@ -89,6 +91,65 @@ public class ChatMatrixOrgimpl
     private static ConfigModulo configuracao;
     private static SincronizacaoNotificacoes sinc;
     private static String codigoUsuarioAdmin;
+
+    private static final String TAG_LOG_TOKEN = "[MTX-TOKEN]";
+    private static final String TAG_LOG_USUARIO = "[MTX-USUARIO]";
+
+    /**
+     * Usuários cuja atualização já falhou nesta execução. Evita repetir o mesmo
+     * PUT a cada mensagem do contato quando o Synapse recusa a alteração - o
+     * que, além do custo, dispara m.room.member em todas as salas dele. Um
+     * restart limpa a lista e tenta de novo.
+     */
+    private static final java.util.Set<String> USUARIOS_COM_ATUALIZACAO_FALHADA = ConcurrentHashMap.newKeySet();
+
+    private static boolean isAtualizacaoJaFalhouNestaExecucao(String pCodigoUsuario) {
+        return pCodigoUsuario != null && USUARIOS_COM_ATUALIZACAO_FALHADA.contains(pCodigoUsuario);
+    }
+
+    private static void registrarFalhaDeAtualizacao(String pCodigoUsuario) {
+        if (pCodigoUsuario != null) {
+            USUARIOS_COM_ATUALIZACAO_FALHADA.add(pCodigoUsuario);
+        }
+    }
+
+    private static void limparFalhaDeAtualizacao(String pCodigoUsuario) {
+        if (pCodigoUsuario != null) {
+            USUARIOS_COM_ATUALIZACAO_FALHADA.remove(pCodigoUsuario);
+        }
+    }
+
+    /**
+     * Telefone só com dígitos, para comparar valores que circulam em formatos
+     * diferentes ("+5531..." aqui, "5531..." no threepid do Synapse).
+     */
+    private static String apenasDigitos(String pTelefone) {
+        return pTelefone == null ? "" : pTelefone.replaceAll("[^0-9]", "");
+    }
+
+    /**
+     * A instrumentação nunca pode interromper o fluxo do chat, por isso o
+     * serviço de log é chamado dentro de um try.
+     */
+    private static void logUsuario(FabMensagens pTipo, String pMensagem) {
+        try {
+            CarameloCode.getServicoLogEventos().registrarLogDeEvento(pTipo, TAG_LOG_USUARIO + " " + pMensagem);
+        } catch (Throwable t) {
+            System.out.println(TAG_LOG_USUARIO + " " + pTipo + " " + pMensagem);
+        }
+    }
+
+    /**
+     * A instrumentação nunca pode interromper o fluxo do chat, por isso o
+     * serviço de log é chamado dentro de um try.
+     */
+    private static void logToken(FabMensagens pTipo, String pMensagem) {
+        try {
+            CarameloCode.getServicoLogEventos().registrarLogDeEvento(pTipo, TAG_LOG_TOKEN + " " + pMensagem);
+        } catch (Throwable t) {
+            System.out.println(TAG_LOG_TOKEN + " " + pTipo + " " + pMensagem);
+        }
+    }
 
     @Override
     public String gerarSenhaPadrao(ComoUsuario pUsuario, String pCodigoUsuario) throws ErroRegraDeNEgocioChat {
@@ -1141,10 +1202,19 @@ public class ChatMatrixOrgimpl
                 temTokenvalido = validarTokenOuGerarNovo(pUsuario, pUsuario.getCodigoUsuario(), null);
             }
         } catch (ErroRegraDeNEgocioChat ex) {
+            // Esta exceção era engolida em silêncio, e a falha chegava mascarada
+            // como "Falha encaminhando mensagem para <sala>" lá na ponta.
+            logToken(FabMensagens.ERRO, "Regra de negócio impediu obter token para "
+                    + (pUsuario == null ? "o usuário do sistema" : pUsuario.getCodigoUsuario())
+                    + " ao enviar na sala " + pSala.getApelido() + ": " + ex.getMessage());
             temTokenvalido = false;
         }
 
         if (!temTokenvalido) {
+            logToken(FabMensagens.ERRO, "Sem token válido para "
+                    + (pUsuario == null ? "o usuário do sistema" : pUsuario.getCodigoUsuario())
+                    + "; a mensagem " + codigoMensagem + " NÃO foi enviada na sala " + pSala.getApelido()
+                    + ". É esta a causa real quando a ponta reclama de 'Falha encaminhando mensagem'.");
             return null;
         }
         if (pUsuario == null) {
@@ -1392,6 +1462,11 @@ public class ChatMatrixOrgimpl
                 }
 
                 if (UtilCRCStringValidador.isNuloOuEmbranco(codUsuario) || UtilCRCStringValidador.isNuloOuEmbranco(senha)) {
+                    logToken(FabMensagens.ERRO, "Não foi possível montar credencial para " + codUsuario
+                            + ": codigoUsuarioEmBranco=" + UtilCRCStringValidador.isNuloOuEmbranco(codUsuario)
+                            + " senhaEmBranco=" + UtilCRCStringValidador.isNuloOuEmbranco(senha)
+                            + ". Para usuário de contato a senha vem do gerarSenhaPadrao,"
+                            + " que depende do contato estar vinculado ao usuário.");
                     return false;
                 }
                 gestao.setLoginNomeUsuario(codUsuario);
@@ -1414,6 +1489,11 @@ public class ChatMatrixOrgimpl
             gestao.setLoginSenhaUsuario(senha);
             gestao.gerarNovoToken();
             conexaoUsuarioValidade = gestao.validarToken();
+            if (!conexaoUsuarioValidade) {
+                logToken(FabMensagens.ERRO, "Login no Matrix falhou para " + codUsuario
+                        + " mesmo após regerar senha e token."
+                        + " Enquanto isso não resolver, nenhuma mensagem desse contato chega no atendimento.");
+            }
             return conexaoUsuarioValidade;
         }
 
@@ -1439,9 +1519,13 @@ public class ChatMatrixOrgimpl
         ).getResposta();
 
         if (!resposta.isSucesso()) {
-            System.out.println(resposta.getRespostaTexto());
+            // O erro do Synapse aqui só ia para o console. Um 500
+            // M_UNKNOWN neste endpoint normalmente é threepid (msisdn ou email)
+            // já vinculado a outro usuário: a causa exata sai no log do Synapse.
+            logUsuario(FabMensagens.ERRO, "Falha atualizando o usuário " + pCodigo
+                    + " no Matrix. nome=" + pNome + " email=" + pEmail + " telefone=" + telefone
+                    + " resposta=" + resposta.getRespostaTexto());
             resposta.dispararMensagens();
-            System.out.println("Falha criando usuário ");
             return null;
         } else {
 
@@ -1478,8 +1562,13 @@ public class ChatMatrixOrgimpl
             throw new UnsupportedOperationException("Usuário sem código enviado");
         }
 
-        if (mapaUsuarioChatByEmail.get(pUsuario.getEmail()) != null) {
-            return mapaUsuarioChatByEmail.get(pUsuario.getEmail());
+        // Usuário de contato é criado sem e-mail, e o mapa é um ConcurrentHashMap,
+        // que lança NullPointerException em get(null).
+        if (pUsuario.getEmail() != null) {
+            ComoUsuarioChat usuarioJaEmMemoria = mapaUsuarioChatByEmail.get(pUsuario.getEmail());
+            if (usuarioJaEmMemoria != null) {
+                return usuarioJaEmMemoria;
+            }
         }
 
         ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatUsuarios.USUARIO_CRIAR.getAcao(
@@ -1550,10 +1639,27 @@ public class ChatMatrixOrgimpl
 
             if (!usuarioPorTelefone.getCodigoUsuario().equals(codigo)) {
                 /// outro usuário está usando este telefone, caso seja um usuário do contato ele precisa ser exluido, e um novo criado
+
+
+
                 if (isUmUsuarioAtendimento(usuarioPorTelefone)) {
+
+                    if (usuarioPorTelefone.getEmail() != null && usuarioPorTelefone.getEmail().contains("@")) {
+                        if (usuarioPorTelefone.getEmail().split("@")[1].endsWith(FabConfigApiMatrixChat.DOMINIO_FEDERADO.getValorParametroSistema())) {
+
+                            ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatUsuarios.USUARIO_DESVINCULAR_TELEFONE.getAcao(usuarioPorTelefone.getCodigoUsuario(), usuarioPorTelefone.getEmail()).getResposta();
+
+                            if (resposta.isSucesso()) {
+                                esquecerUsuarioDoCache(usuarioPorTelefone);
+                                throw new ErroRegraDeNEgocioChat("O usuário de atendimento " + usuarioPorTelefone.getNome() + " " + usuarioPorTelefone.getEmail() + " está usando seu telefone, mas já removi este telefone do usuário, por fabor tente novamente");
+                            } else {
+                                throw new ErroRegraDeNEgocioChat("O usuário de atendimento " + usuarioPorTelefone.getNome() + " " + usuarioPorTelefone.getEmail() + " está usando seu telefone, entre em contato, re remova esse numero de telefone do atendimento");
+                            }
+                        }
+                    }
                     throw new ErroRegraDeNEgocioChat("O usuário de atendimento " + usuarioPorTelefone.getNome() + " " + usuarioPorTelefone.getEmail() + " está usando seu telefone, entre em contato, re remova esse numero de telefone do atendimento");
                 } else {
-                    FabApiRestIntMatrixChatUsuarios.USUARIO_REMOVER.getAcao(codigo);
+                    desativarUsuarioContatoConflitante(usuarioPorTelefone, codigo, telefone);
                 }
             }
 
@@ -1565,6 +1671,81 @@ public class ChatMatrixOrgimpl
         //  }
         return codigo;
 
+    }
+
+    /**
+     * Libera o telefone desativando o usuário de contato que o detém.
+     *
+     * Acontece quando o mesmo telefone gerou códigos de usuário diferentes ao
+     * longo do tempo - por exemplo o número cru do WhatsApp, sem o nono dígito,
+     * contra o número normalizado. Enquanto o threepid msisdn continuar
+     * vinculado ao usuário antigo, o Synapse recusa a atualização do novo e
+     * nenhuma mensagem do contato chega ao atendimento.
+     *
+     * A desativação (POST /_synapse/admin/v1/deactivate) remove os threepids da
+     * conta, que é o que precisamos liberar; o id do usuário continua existindo
+     * no servidor, com o histórico dele.
+     *
+     * Só desativa usuário de contato: atendimento é recusado antes de chegar
+     * aqui, e admin ou usuário humano do sistema nunca é tocado.
+     */
+    private void desativarUsuarioContatoConflitante(ComoUsuarioChat pUsuarioConflitante, String pCodigoDesejado,
+            String pTelefone) throws ErroRegraDeNEgocioChat {
+
+        String codigoConflitante = pUsuarioConflitante.getCodigoUsuario();
+
+        if (codigoConflitante == null || codigoConflitante.equals(pCodigoDesejado)) {
+            return;
+        }
+        if (codigoConflitante.equals(getUsuarioAdmin().getCodigoUsuario())) {
+            throw new ErroRegraDeNEgocioChat("O telefone " + pTelefone
+                    + " está vinculado ao usuário administrador do chat. Remova o telefone dele manualmente.");
+        }
+        if (!isUmUsuarioContato(codigoConflitante)) {
+            throw new ErroRegraDeNEgocioChat("O telefone " + pTelefone + " está vinculado ao usuário "
+                    + codigoConflitante + ", que não é um usuário de contato."
+                    + " Nada foi desativado; resolva o vínculo manualmente no Synapse.");
+        }
+
+        logUsuario(FabMensagens.ALERTA, "O telefone " + pTelefone + " está vinculado ao usuário de contato "
+                + codigoConflitante + ", mas o usuário correto para esse telefone é " + pCodigoDesejado
+                + ". Desativando o antigo para liberar o threepid.");
+
+        ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatUsuarios.USUARIO_REMOVER
+                .getAcao(codigoConflitante).getResposta();
+
+        if (resposta == null || !resposta.isSucesso()) {
+            logUsuario(FabMensagens.ERRO, "Falha desativando o usuário de contato " + codigoConflitante
+                    + " que detém o telefone " + pTelefone + ". resposta="
+                    + (resposta == null ? "nula" : resposta.getRespostaTexto()));
+            throw new ErroRegraDeNEgocioChat("O telefone " + pTelefone + " está vinculado ao usuário "
+                    + codigoConflitante + " e não foi possível liberá-lo.");
+        }
+
+        esquecerUsuarioDoCache(pUsuarioConflitante);
+        logUsuario(FabMensagens.ALERTA, "Usuário de contato " + codigoConflitante
+                + " desativado; o telefone " + pTelefone + " está livre para o usuário " + pCodigoDesejado + ".");
+    }
+
+    /**
+     * Tira o usuário dos caches em memória. Sem isso o registro desativado
+     * continuaria sendo devolvido pelas buscas por código, telefone e e-mail
+     * até o serviço reiniciar.
+     */
+    private void esquecerUsuarioDoCache(ComoUsuarioChat pUsuario) {
+        if (pUsuario == null) {
+            return;
+        }
+        if (pUsuario.getCodigoUsuario() != null) {
+            mapaUsuarioChatByCodigo.remove(pUsuario.getCodigoUsuario());
+        }
+        if (pUsuario.getTelefone() != null) {
+            mapaUsuarioChatByTelefone.remove(UtilCRCStringTelefone.gerarNumeroTelefoneInternacional(pUsuario.getTelefone()));
+            mapaUsuarioChatByTelefone.remove(pUsuario.getTelefone());
+        }
+        if (pUsuario.getEmail() != null) {
+            mapaUsuarioChatByEmail.remove(pUsuario.getEmail());
+        }
     }
 
     @Override
@@ -1588,25 +1769,51 @@ public class ChatMatrixOrgimpl
             if (novoUsuario == null) {
                 throw new ErroConexaoServicoChat("Falha criando usuário tipo contato");
             }
-
-            usuarioAtualizarSenha(codigoUsuario, gerarSenhaPadrao(usuario, codigoUsuario));
+            // Aqui "usuario" é sempre null, por definição deste ramo: a senha padrão
+            // tem de ser gerada para o usuário que acabou de ser criado.
+            usuarioAtualizarSenha(codigoUsuario, gerarSenhaPadrao(novoUsuario, codigoUsuario));
 
             usuario = novoUsuario;
         } else {
-            boolean teveAlteracao = false;
-            if (usuario.getTelefone() == null || !usuario.getTelefone().equals(telefoneInternacional)) {
-                teveAlteracao = true;
-            }
+            // O telefone é comparado só por dígitos: o Synapse guarda o msisdn
+            // em E.164 sem "+" e aqui o valor circula com "+". Comparando o
+            // texto cru a diferença nunca se resolvia, e toda mensagem do
+            // contato disparava um PUT no usuário - que além do custo dispara
+            // m.room.member em todas as salas dele.
+            boolean teveAlteracao = !apenasDigitos(usuario.getTelefone()).equals(apenasDigitos(telefoneInternacional));
+
             if (usuario.getNome() == null || !usuario.getNome().equals(pNome)) {
                 teveAlteracao = true;
             }
+
+            if (teveAlteracao && isAtualizacaoJaFalhouNestaExecucao(usuario.getCodigoUsuario())) {
+                // Já falhou nesta execução: não insiste a cada mensagem. Um
+                // restart tenta de novo.
+                teveAlteracao = false;
+            }
+
             if (teveAlteracao) {
                 UsuarioChatMatrixOrg usuarioAtualizacao = new UsuarioChatMatrixOrg();
                 usuarioAtualizacao.setNome(pNome);
                 usuarioAtualizacao.setTelefone(telefoneInternacional);
                 usuarioAtualizacao.setCodigoUsuario(usuario.getCodigoUsuario());
-                usuario = usuarioAtualizar(usuarioAtualizacao);
+                ComoUsuarioChat usuarioAtualizado = usuarioAtualizar(usuarioAtualizacao);
 
+                // Atualizar nome e telefone é complementar ao atendimento: se
+                // falhar, seguimos com o usuário que já existe. Antes o retorno
+                // nulo substituía o usuário válido, e quem chamou
+                // (getContato -> gerarUsuarioContato) quebrava por causa de um
+                // PUT que não impede a conversa de acontecer.
+                if (usuarioAtualizado == null) {
+                    registrarFalhaDeAtualizacao(usuario.getCodigoUsuario());
+                    logUsuario(FabMensagens.ALERTA, "Não foi possível atualizar o usuário de contato "
+                            + usuario.getCodigoUsuario() + " (nome \"" + pNome + "\", telefone "
+                            + telefoneInternacional + "). Seguindo com o cadastro atual para não interromper"
+                            + " o atendimento; o threepid de telefone segue como estava até a próxima execução.");
+                } else {
+                    limparFalhaDeAtualizacao(usuario.getCodigoUsuario());
+                    usuario = usuarioAtualizado;
+                }
             }
 
         }
