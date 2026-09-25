@@ -308,7 +308,11 @@ public class ChatMatrixOrgimpl
         }
         ItfRespostaWebServiceSimples resposta = FabApiRestIntMatrixChatSalas.SALA_ENCONTRAR_POR_ID.getAcao(pCodigoSala).getResposta();
 
-        JsonObject respJson = resposta.getRespostaComoObjetoJson();
+        JsonObject respJson = resposta == null ? null : resposta.getRespostaComoObjetoJson();
+        if (respJson == null || !respJson.containsKey("rooms")) {
+            throw new ErroConexaoServicoChat("Resposta inválida do Matrix ao buscar a sala " + pCodigoSala
+                    + " (http=" + (resposta == null ? "sem resposta" : resposta.getCodigoResposta()) + ")");
+        }
         if (!respJson.getJsonArray("rooms").isEmpty()) {
             JsonObject jsonSala = respJson.getJsonArray("rooms").get(0).asJsonObject();
             if (respJson.getInt("total_rooms") > 0) {
@@ -320,11 +324,16 @@ public class ChatMatrixOrgimpl
                             .getAcao(sala.getCodigoChat())
                             .getResposta();
 
-                    JsonObject original = respostaPermicao.getRespostaComoObjetoJson();
+                    JsonObject original = respostaPermicao == null ? null : respostaPermicao.getRespostaComoObjetoJson();
+                    if (original == null) {
+                        // Sem resposta legível não há como validar as permissões: não excluir a sala.
+                        throw new ErroConexaoServicoChat("Não foi possível ler as permissões da sala " + pCodigoSala
+                                + " (http=" + (respostaPermicao == null ? "sem resposta" : respostaPermicao.getCodigoResposta()) + ")");
+                    }
                     JsonObject usersAtual = original.getJsonObject("users");
 
                     boolean temUsuarioComPermissaoInadequada = false;
-                    if (!original.containsKey("error")) {
+                    if (!original.containsKey("error") && usersAtual != null) {
                         temUsuarioComPermissaoInadequada = usersAtual.keySet().stream().filter(usr -> !usr.equals(getCodigoUsuarioAdmin()))
                                 .filter(usrNormal -> usersAtual.getInt(usrNormal) >= 100).findFirst().isPresent();
                         if (temUsuarioComPermissaoInadequada) {
@@ -332,7 +341,7 @@ public class ChatMatrixOrgimpl
                             return null;
                         }
                     } else {
-                        if (original.getString("errcode").equals("M_FORBIDDEN")) {
+                        if ("M_FORBIDDEN".equals(original.getString("errcode", null))) {
                             salaExcluir(sala);
                             return null;
                         }
@@ -757,7 +766,9 @@ public class ChatMatrixOrgimpl
 
     @Override
     public ComoUsuarioChat getUsuarioByEmail(String pEmail) throws ErroConexaoServicoChat {
-
+        if (pEmail == null) {
+            return null;
+        }
         if (mapaUsuarioChatByEmail.containsKey(pEmail)) {
             return mapaUsuarioChatByEmail.get(pEmail);
         }

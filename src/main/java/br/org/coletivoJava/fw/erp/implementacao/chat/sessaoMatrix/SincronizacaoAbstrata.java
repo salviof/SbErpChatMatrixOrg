@@ -3,6 +3,7 @@ package br.org.coletivoJava.fw.erp.implementacao.chat.sessaoMatrix;
 import br.org.coletivoJava.fw.api.erp.chat.ErroConexaoServicoChat;
 import br.org.coletivoJava.fw.api.erp.chat.model.ComoChatSalaBean;
 import br.org.coletivoJava.fw.erp.implementacao.chat.ChatMatrixOrgimpl;
+import br.org.coletivoJava.fw.api.erp.chat.model.FabTipoPacoteDeAcaoMatrix;
 import br.org.coletivoJava.fw.api.erp.chat.ErroMtxParalizacaoDeProcessamento;
 import br.org.coletivoJava.fw.erp.implementacao.chat.json_bind_matrix_org.pacotematrix.PacoteMatrixParsing;
 import br.org.coletivoJava.fw.erp.implementacao.chat.model.model.SalaChatSessaoEscutaAtiva;
@@ -440,6 +441,18 @@ public abstract class SincronizacaoAbstrata {
                                                 + " sala=" + evento.getRoom_id());
                                         continue;
                                     }
+                                    // Mudança de nome/avatar do contato (ou do admin) gera um m.room.member em
+                                    // cada sala dele. O listener recusa eventos desses remetentes, então abrir a
+                                    // sala (getSalaByCodigo, ~4s cada) só atrasa o batch sem efeito nenhum.
+                                    if (FabTipoPacoteDeAcaoMatrix.ATUALIZACAO_MEMBROS.equals(evento.getTipoEvento())
+                                            && (servicoMatrix.isUmUsuarioContato(evento.getSender())
+                                            || ChatMatrixOrgimpl.getCodigoUsuarioAdmin().equals(evento.getSender()))) {
+                                        log(FabMensagens.AVISO, "Evento id=" + evento.getEvent_id()
+                                                + " tipo=" + evento.getType()
+                                                + " de " + evento.getSender()
+                                                + " em sala sem listener; ignorado sem abrir a sala");
+                                        continue;
+                                    }
                                     try {
                                         long inicioBuscaSala = System.currentTimeMillis();
                                         ComoChatSalaBean sala = servicoMatrix.getSalaByCodigo(evento.getRoom_id());
@@ -503,6 +516,13 @@ public abstract class SincronizacaoAbstrata {
                                                 + evento.getRoom_id() + " do evento id=" + evento.getEvent_id()
                                                 + ". O evento será DESCARTADO: " + ex.getMessage());
                                         Logger.getLogger(SincronizacaoAbstrata.class.getName()).log(Level.SEVERE, null, ex);
+                                    } catch (Throwable t) {
+                                        // Sem este catch a exceção sobe para o batch e o since não avança.
+                                        log(FabMensagens.ERRO, "Falha não prevista ao resolver a sala "
+                                                + evento.getRoom_id() + " do evento id=" + evento.getEvent_id()
+                                                + ". O evento será DESCARTADO: "
+                                                + t.getClass().getName() + ": " + t.getMessage());
+                                        Logger.getLogger(SincronizacaoAbstrata.class.getName()).log(Level.SEVERE, null, t);
                                     }
 
                                 }
